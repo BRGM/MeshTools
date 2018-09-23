@@ -33,7 +33,7 @@ As from version 4.12, CGAL can be used in a header only mode you may also just w
 
 If you install MeshTools using pip (cf. below) and want to use a specific version of CGAL  don't forget to use the `MESHTOOLS_WITH_CGAL_DIR` environment variable to pass the value of `CGAL_DIR` to cmake.
 
-On Windows you may need precompiled versions of the *gmp* and *mpfr* libraries that you may obtain from the (Geometry Factory website)[https://doc.cgal.org/latest/Manual/installation.html#title5].
+On Windows you may need precompiled versions of the *gmp* and *mpfr* libraries that you may obtain from the [Geometry Factory website](https://doc.cgal.org/latest/Manual/installation.html).
 
 
 ### Packaged dependencies
@@ -89,5 +89,5 @@ Just follow the steps [here](https://cmake.org/runningcmake/), prefer
 git, it is the top level directory where you can find a `CMakeLists.txt` file.
 
 Once the library is built you will have all of the python modules composing MeshTools in the MeshTools directory. These can be imported into python 
-scripts and used as in the example scripts in the `tests\python` directory.
+scripts and used as in the example scripts in the `tests/python` directory.
 
