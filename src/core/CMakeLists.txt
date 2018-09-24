@@ -9,4 +9,4 @@ set_target_properties(_MeshTools
     CXX_EXTENSIONS NO
 )
 
-install(TARGETS _MeshTools DESTINATION . EXPORT MeshTools)
+install(TARGETS _MeshTools DESTINATION ${MESHTOOLS_PYTHON_PACKAGE_NAME} EXPORT MeshTools)

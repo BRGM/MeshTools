@@ -43,8 +43,6 @@ class CMakeBuild(build_ext):
         
         # this is where setuptools will build the module
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        # MESHTOOLS_PYTHON_PACKAGE_DIRECTORY is a CMake variable to set the installation prefix
-        cmake_args+= ['-DMESHTOOLS_PYTHON_PACKAGE_DIRECTORY=' + extdir]
         # Link to CGAL directory
         try:
             CGAL_DIR = os.environ['MESHTOOLS_WITH_CGAL_DIR']

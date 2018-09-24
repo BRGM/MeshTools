@@ -9,4 +9,4 @@ set_target_properties(PetrelMesh
 )
 target_link_libraries(PetrelMesh PRIVATE CGAL::CGAL)
 
-install(TARGETS PetrelMesh DESTINATION . EXPORT MeshTools)
+install(TARGETS PetrelMesh DESTINATION ${MESHTOOLS_PYTHON_PACKAGE_NAME} EXPORT MeshTools)

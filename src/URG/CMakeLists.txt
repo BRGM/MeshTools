@@ -10,4 +10,4 @@ set_target_properties(URG
 )
 target_link_libraries(URG PRIVATE CGAL::CGAL)
 
-install(TARGETS URG DESTINATION . EXPORT MeshTools)
+install(TARGETS URG DESTINATION ${MESHTOOLS_PYTHON_PACKAGE_NAME} EXPORT MeshTools)

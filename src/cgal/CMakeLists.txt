@@ -23,5 +23,5 @@ set_target_properties(Corefinement
 )
 target_link_libraries(Corefinement PRIVATE CGAL::CGAL)
 
-install(TARGETS CGALWrappers Corefinement DESTINATION . EXPORT MeshTools)
+install(TARGETS CGALWrappers Corefinement DESTINATION ${MESHTOOLS_PYTHON_PACKAGE_NAME} EXPORT MeshTools)
 
