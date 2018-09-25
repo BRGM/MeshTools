@@ -1,5 +1,5 @@
 
-pybind11_add_module(CGALWrappers CGALWrappers.cpp C3t3Wrapper-module.cpp DTMWrapper.cpp
+pybind11_add_module(CGALWrappers CGALWrappers.cpp EpickWrapper-module.cpp C3t3Wrapper-module.cpp DTMWrapper.cpp
                     implicit_functions.cpp mesh_implicit_domains.cpp)
 target_compile_definitions(CGALWrappers PRIVATE BOOST_PARAMETER_MAX_ARITY=12)
 set_target_properties(CGALWrappers
