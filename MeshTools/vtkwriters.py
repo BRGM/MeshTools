@@ -476,8 +476,18 @@ def points_as_vtu(vertices):
     tmp = np.reshape(vertices, (-1, 3))
     return vtu_doc(
             tmp,
-            np.rehsape(np.arange(tmp.shape[0]), (-1, 1)),
-            )
+            np.reshape(np.arange(tmp.shape[0]), (-1, 1)),
+        )
+
+def polyline_as_vtu(vertices):
+    tmp = np.reshape(vertices, (-1, 3))
+    assert tmp.shape[0]>1
+    return vtu_doc(
+            tmp,
+            np.transpose(np.vstack(
+                [range(tmp.shape[0]-1), range(1, tmp.shape[0])]
+            )),
+         )
 
 if __name__ == '__main__':
     import itertools

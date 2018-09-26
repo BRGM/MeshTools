@@ -3,6 +3,7 @@
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Surface_mesh.h>
+#include <CGAL/Polygon_mesh_processing/corefinement.h>
 
 #include <pybind11/numpy.h>
 
@@ -54,6 +55,12 @@ struct XArrayWrapper
 
 template <typename Point_type>
 using PointArrayWrapper = XArrayWrapper<Point_type, double, 3>;
+
+// CHECKME: does this avoid a copy?
+template <typename T>
+inline auto remove_forcecast(py::array_t<T, py::array::c_style | py::array::forcecast> a) {
+    return py::array_t<T, py::array::c_style>{ a };
+}
 
 template <int nbcols, typename Target_type, typename T>
 inline auto array_wrapper(py::array_t<T, py::array::c_style> a) {
@@ -114,19 +121,35 @@ void add_epick_wrapper(py::module& module)
                 double_array{} // used to create a handle so that the returned array is effectively a view
         };
     }, py::keep_alive<0, 1>())
+    //    .def("__getitem__", [](Polyline& self, std::size_t i) {
+    //    if (i >= self.size()) {
+    //        throw py::key_error{
+    //            py::str{ "wrong index: {}" }.format(i)
+    //        };
+    //    }
+    //    return self[i];
+    //}, py::keep_alive<0, 1>())
         ;
 
     py::class_<Polylines>(module, "Polylines")
         .def(py::init<>())
-        .def("__iter__", [](const Polylines& self) {
+        .def("__iter__", [](Polylines& self) {
         return py::make_iterator(begin(self), end(self));
     }, py::keep_alive<0, 1>())
+    //    .def("__getitem__", [](Polylines& self, std::size_t i) {
+    //    if (i >= self.size()) {
+    //        throw py::key_error{ 
+    //              py::str{"wrong index: {}"}.format(i) 
+    //        };
+    //    }
+    //    return *(std::advance(self.begin(), i));
+    //}, py::keep_alive<0, 1>())
         ;
 
     py::class_<Triangulated_surface>(module, "TSurf")
         .def(py::init([](
-            py::array_t<double, py::array::c_style> vertices,
-            py::array_t<std::size_t, py::array::c_style> triangles
+            py::array_t<double, py::array::c_style | py::array::forcecast> vertices,
+            py::array_t<std::size_t, py::array::c_style | py::array::forcecast> triangles
             ) {
         PointArrayWrapper<const Point> vertices_wrapper{ vertices };
         auto tsurf = std::make_unique<Triangulated_surface>();
@@ -136,13 +159,13 @@ void add_epick_wrapper(py::module& module)
         for (auto&& P : vertices_wrapper) {
             vmap.emplace_back(tsurf->add_vertex(P));
         }
-        auto triangles_wrapper = array_wrapper<3, const std::array<std::size_t, 3>>(triangles);
+        auto triangles_wrapper = array_wrapper<3, const std::array<std::size_t, 3>>(remove_forcecast(triangles));
         for (auto&& T : triangles_wrapper) {
             assert(vmap[T[0]] != tsurf->null_vertex());
             assert(vmap[T[1]] != tsurf->null_vertex());
             assert(vmap[T[2]] != tsurf->null_vertex());
 #ifndef NDEBUG
-            auto newface =
+            auto new_face =
 #endif
                 tsurf->add_face(vmap[T[0]], vmap[T[1]], vmap[T[2]]);
             assert(new_face != tsurf->null_face());
@@ -152,7 +175,56 @@ void add_epick_wrapper(py::module& module)
         .def("as_arrays", [](const Triangulated_surface& self) {
         return mesh_as_arrays(static_cast<const typename Triangulated_surface::Base&>(self));
     })
+        .def("face_centers", [](const Triangulated_surface& self) {
+        auto centers = py::array_t<double, py::array::c_style>{
+            { static_cast<std::size_t>(self.number_of_faces()), static_cast<std::size_t>(3) }
+        };
+        static_assert(sizeof(Point) == 3 * sizeof(double), "inconsistent sizes in memory");
+        auto pC = reinterpret_cast<Point *>(centers.mutable_data(0, 0));
+        std::vector<Triangulated_surface::Vertex_index> fv;
+        fv.reserve(3);
+        for (auto&& f : self.faces()) {
+            fv.clear();
+            for (auto&& v : CGAL::vertices_around_face(
+                    self.halfedge(f),
+                    static_cast<const typename Triangulated_surface::Base&>(self)
+                )) {
+                fv.emplace_back(v);
+            }
+            assert(fv.size() == 3);
+            *pC = CGAL::centroid(self.point(fv[0]), self.point(fv[1]), self.point(fv[2]));
+            ++pC;
+        }
+        return centers;
+    })
+        .def("to_off", [](const Triangulated_surface& self, py::str& filename) {
+        auto os = std::ofstream{ filename };
+        CGAL::write_off(os, self);
+        os.close();
+    })
+        .def("remove_faces", [](Triangulated_surface& self, py::array_t<bool, py::array::c_style> where) {
+        assert(where.ndim() == 1);
+        assert(where.size() == self.number_of_faces());
+        auto premove = where.data(0);
+        for (auto&& f : self.faces()) {
+            if (*premove) {
+                CGAL::Euler::remove_face(
+                    self.halfedge(f), 
+                    static_cast<typename Triangulated_surface::Base&>(self)
+                );
+            }
+            ++premove;
+        }
+    })
         ;
+
+    module.def("corefine", [](Triangulated_surface& S1, Triangulated_surface& S2) {
+        CGAL::Polygon_mesh_processing::corefine(
+            static_cast<typename Triangulated_surface::Base&>(S1),
+            static_cast<typename Triangulated_surface::Base&>(S2),
+            true
+        );
+    });
 
     module.def("intersection_curves", [](Triangulated_surface& S1, Triangulated_surface& S2) {
         auto polylines = std::make_unique<Polylines>();
