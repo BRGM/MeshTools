@@ -28,12 +28,27 @@ available through the package manager (e.g. `sudo apt-get install ccmake`).
 MeshTools can optionally be built with CGAL extensions.
 It will need CGAL 4.12 (or higher).
 
-On Linux you mau just install the ad-hoc package.
-As from version 4.12, CGAL can be used in a header only mode you may also just want to download the [CGAL source code](https://github.com/CGAL/cgal/releases) and set the CMake `CGAL_DIR` variable point to the source directory.
+On Linux you may just install the ad-hoc package using your favourite package
+manager.
+As from version 4.12, CGAL can be used in a header only mode you may also just
+want to download the [CGAL source code](https://github.com/CGAL/cgal/releases)
+and set the CMake `CGAL_DIR` variable point to the source directory.
 
-If you install MeshTools using pip (cf. below) and want to use a specific version of CGAL  don't forget to use the `MESHTOOLS_WITH_CGAL_DIR` environment variable to pass the value of `CGAL_DIR` to cmake.
+If you install MeshTools using pip (cf. below) and want to use a specific
+version of CGAL  don't forget to use the `MESHTOOLS_WITH_CGAL_DIR` environment
+variable to pass the value of `CGAL_DIR` to cmake.
 
-On Windows you may need precompiled versions of the *gmp* and *mpfr* libraries that you may obtain from the [Geometry Factory website](https://doc.cgal.org/latest/Manual/installation.html).
+On Windows you may need precompiled versions of the *gmp* and *mpfr* libraries
+that you may obtain from the
+[Geometry Factory website](https://doc.cgal.org/latest/Manual/installation.html).
+
+On Windows, you can use the CGAL Installer from the
+[github CGAL page](https://github.com/CGAL/cgal/releases) that will install
+precompiled versions of the gmp and mpfr libraries. Then just define the
+CGAL_DIR environment variable to where the CGAL source has been installed or
+use the MESHTOOLS_WITH_CGAL_DIR environment variable to pass the value of
+CGAL_DIR to cmake (if for any, obviously good, reason you do not want to use
+CGAL_DIR).
 
 
 ### Packaged dependencies
@@ -49,8 +64,10 @@ and [optional](http://en.cppreference.com/w/cpp/utility/optional) concepts.
 
 ## Building with setuptools
 
-If all the requirements above are accessible on your path it's possible that you can use [pip](https://pypi.org/project/pip/)
-and/or setuptools, after having set `MESHTOOLS_WITH_CGAL_DIR` environment variable pointing to where CGAL resides (in the case you want to use it).
+If all the requirements above are accessible on your path it's possible that you
+can use [pip](https://pypi.org/project/pip/)
+and/or setuptools, after having set `MESHTOOLS_WITH_CGAL_DIR` environment
+variable pointing to where CGAL resides (in the case you want to use it).
 
 To have a system default installation just run in the root MeshTools directory:
 
@@ -88,6 +105,7 @@ Just follow the steps [here](https://cmake.org/runningcmake/), prefer
 *out of source build*. The source code is the directory that you have cloned using
 git, it is the top level directory where you can find a `CMakeLists.txt` file.
 
-Once the library is built you will have all of the python modules composing MeshTools in the MeshTools directory. These can be imported into python 
+Once the library is built you will have all of the python modules composing
+MeshTools in the MeshTools directory. These can be imported into python 
 scripts and used as in the example scripts in the `tests/python` directory.
 
