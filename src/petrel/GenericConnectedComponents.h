@@ -28,16 +28,10 @@ public:
         std::vector<typename Components_map::iterator> existing_components;
         // FIXME: shoud have a lock mechanism for parrallel processing
         for (auto p = first; p != last; ++p) {
-            discovered_neighbors.clear();
+            auto p_handle = Element_handle{ p };
             existing_components.clear();
-            auto handle = Element_handle{ p };
-            auto element_component = components_map.find(handle);
-            if (element_component == components_map.end()) {
-                auto result = components_map.insert({ handle, Component_id{ connections.size() } });
-                assert(result.second);
-                element_component = result.first;
-            }
-            auto neighborhood = neighborhood_factory(handle);
+            discovered_neighbors.clear();
+            auto neighborhood = neighborhood_factory(p_handle);
             for (int i = 0; i < neighborhood.size(); ++i) {
                 if (neighborhood.is_connected(i)) {
                     auto neighbor = neighborhood(i);
@@ -48,20 +42,33 @@ public:
                         discovered_neighbors.push_back(neighbor);
                 }
             }
-            auto component = element_component->second;
-            if (existing_components.empty()) {
+            auto component = Component_id{ connections.size() };
+            for (auto&& other_component : existing_components) {
+                assert(other_component->second < connections.size());
+                component = std::min(component, connections[other_component->second]);
+            }
+            if (component == Component_id{ connections.size() }) {
+                assert(existing_components.empty());
                 connections.emplace_back(component);
             }
+            assert(component < connections.size());
+            auto element_component = components_map.find(p_handle);
+            if (element_component == components_map.end()) {
+                auto result = components_map.insert({ p_handle, component });
+                assert(result.second);
+                element_component = result.first;
+            }
             else {
-                existing_components.push_back(element_component);
-                for (auto&& other_component : existing_components) {
-                    component = std::min(component, connections[other_component->second]);
-                }
+                component = std::min(element_component->second, component);
                 assert(component < connections.size());
+                component = std::min(connections[component], component);
+                assert(element_component->second < connections.size());
+                connections[element_component->second] = component;
                 element_component->second = component;
-                for (auto&& other_component : existing_components) {
-                    connections[other_component->second] = component;
-                }
+            }
+            for (auto&& other_component : existing_components) {
+                assert(other_component->second < connections.size());
+                connections[other_component->second] = component;
             }
             for (auto&& neighbor : discovered_neighbors) {
                 components_map.insert({neighbor, component});

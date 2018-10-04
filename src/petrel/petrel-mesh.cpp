@@ -1,6 +1,8 @@
 #include <cassert>
 #include <vector>
 #include <map>
+#include <fstream>
+
 #include <CGAL/Bbox_2.h>
 #include <CGAL/box_intersection_d.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -253,6 +255,7 @@ auto mesh(
     py::array_t<int, py::array::c_style> segments
 ) {
     auto cdt = build_constrained_delaunay_triangulation(segment_vertices, segments);
+    assert(cdt.number_of_faces() > 0);
     const std::size_t nv = cdt.number_of_vertices();
     auto vertices = py::array_t<double, py::array::c_style>{ { nv, static_cast<std::size_t>(2) } };
     std::map<CDT::Vertex_handle, std::size_t> vmap;
@@ -280,6 +283,7 @@ auto mesh(
         for (int k = 0; k<3; ++k) rt(n, k) = vmap[f->vertex(k)];
         ++n;
     }
+    assert(cdt.number_of_faces() > 0);
     typedef ConnectedComponents<NeighborhoodFactory::Element_handle> Connected_components;
     auto components = Connected_components{
         cdt.finite_faces_begin(), cdt.finite_faces_end(), NeighborhoodFactory{ &cdt }
@@ -351,9 +355,27 @@ PYBIND11_MODULE(PetrelMesh, module)
     module.doc() = "pybind11 with CGAL2D (quick and dirty!!!)";
     module.def("split_and_mesh", &split_and_mesh);
     module.def("mesh", &mesh);
-    //module.def("foo", []() {
-    //    boost::optional<int> test;
-    //    test = false;
-    //    if (test) py::print("ya bon");
-    //});
+
+    // -- Quick and dirty wrappers for debugging purposes
+
+    py::class_<CDT>(module, "CDT")
+        .def(py::init([](std::string filename) {
+        auto p = std::make_unique<CDT>();
+        assert(p);
+        std::ifstream input{ filename };
+        input >> (*p) ;
+        input.close();
+        return p;
+    }));
+
+    typedef ConnectedComponents<NeighborhoodFactory::Element_handle> Connected_components;
+    
+    py::class_<Connected_components>(module, "Connected_components");
+
+    module.def("connected_components", [](CDT& cdt) {
+        return Connected_components{
+            cdt.finite_faces_begin(), cdt.finite_faces_end(), NeighborhoodFactory{ &cdt }
+        };
+    });
+
 }
