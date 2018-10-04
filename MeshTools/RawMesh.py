@@ -80,7 +80,7 @@ class RawMesh:
             splitted_cells.append(np.array(tets))
         # reconstruct the original cell index
         nb_cell_tets = np.array([tets.shape[0] for tets in splitted_cells])
-        tmp = np.zeros(np.sum(nb_cell_tets))
+        tmp = np.zeros(np.sum(nb_cell_tets), dtype=MT.idtype())
         tmp[np.cumsum(nb_cell_tets[:-1])] = 1
         original_cell_index = np.cumsum(tmp)
         return MT.TetMesh.make(

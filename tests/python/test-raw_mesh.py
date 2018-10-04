@@ -38,11 +38,16 @@ def test_raw_mesh():
         face_nodes=face_nodes,
         cell_faces=cell_faces
     )
+    cell_property = np.array([np.sqrt(2), np.pi]) # 2 cells
     tetmesh, original_cell = mesh.as_tets()
     MT.to_vtu(
         tetmesh, 'cells_as_tets',
-        celldata = {'original_cell': original_cell}
+        celldata = {
+            'original_cell': original_cell,
+            'magic_numbers': cell_property[original_cell],
+        },
     )
+
 
 if __name__=='__main__':
     test_raw_mesh()
