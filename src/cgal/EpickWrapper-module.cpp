@@ -147,8 +147,9 @@ void add_epick_wrapper(py::module& module)
         ;
 
     py::class_<Triangulated_surface>(module, "TSurf")
+        .def(py::init<const Triangulated_surface&>()) // copy constructor
         .def(py::init([](
-            py::array_t<double, py::array::c_style | py::array::forcecast> vertices,
+                py::array_t<double, py::array::c_style | py::array::forcecast> vertices,
             py::array_t<std::size_t, py::array::c_style | py::array::forcecast> triangles
             ) {
         PointArrayWrapper<const Point> vertices_wrapper{ vertices };
@@ -216,9 +217,42 @@ void add_epick_wrapper(py::module& module)
             ++premove;
         }
     })
+        .def_property_readonly("nb_vertices", &Triangulated_surface::number_of_vertices)
+        .def("number_of_vertices", &Triangulated_surface::number_of_vertices)
+        .def_property_readonly("nb_faces", &Triangulated_surface::number_of_faces)
+        .def("number_of_faces", &Triangulated_surface::number_of_faces)
+        .def("__str__", [](const Triangulated_surface& self) {
+        return py::str{ "TSurf {} vertices {} faces" }.format(
+            self.number_of_vertices(), self.number_of_faces()
+        );
+    })  
+        .def("join", [](Triangulated_surface& self, const Triangulated_surface& other) {
+            self.join(other);
+        })
+        .def("self_intersections", [](const Triangulated_surface& self) {
+        typedef typename Triangulated_surface::Face_index Face_index;
+        typedef std::pair<Face_index, Face_index> Intersecting_faces;
+        std::vector<Intersecting_faces> self_intersections;
+        CGAL::Polygon_mesh_processing::self_intersections(
+            static_cast<const typename Triangulated_surface::Base&>(self),
+            std::back_inserter(self_intersections)
+        );
+        if (self_intersections.empty()) return py::object{ py::none{} };
+        auto result = py::list{};
+        for (auto&& faces : self_intersections) {
+            result.append(
+                py::make_tuple(
+                    static_cast<std::size_t>(faces.first), 
+                    static_cast<std::size_t>(faces.second)
+                )
+            );
+        }
+        return py::object{ result };
+        })
         ;
 
     module.def("corefine", [](Triangulated_surface& S1, Triangulated_surface& S2) {
+        const auto nv = S1.number_of_vertices();
         CGAL::Polygon_mesh_processing::corefine(
             static_cast<typename Triangulated_surface::Base&>(S1),
             static_cast<typename Triangulated_surface::Base&>(S2),
