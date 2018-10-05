@@ -4,3 +4,5 @@ For the moment MeshTools essentially serves as a pre and post-processing module 
 [^altmesh]: any other reference is welcome here...
 
 There is still no documentation but you may start with the [installation instructions](INSTALL.md).
+
+:exclamation: Beware that from commit 3571466f342bd8e048fbc37368225b1ae7d14b6b you will need a patched version of CGAL 4.12.1 (cf. https://github.com/CGAL/cgal/pull/3377). Please note also that for the moment MeshTools is not compliant with CGAL 4.13.
