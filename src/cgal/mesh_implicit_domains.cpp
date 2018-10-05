@@ -26,7 +26,11 @@ typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef FT_to_point_function_wrapper<K::FT, K::Point_3> Function;
 typedef CGAL::Implicit_multi_domain_to_labeling_function_wrapper<Function> Function_wrapper;
 typedef Function_wrapper::Function_vector Function_vector;
+#if CGAL_VERSION_MINOR>12
+typedef CGAL::Labeled_mesh_domain_3<K> Labeled_mesh_domain;
+#else // CGAL_VERSION<=4.12
 typedef CGAL::Labeled_mesh_domain_3<Function_wrapper, K> Labeled_mesh_domain;
+#endif
 typedef CGAL::Mesh_domain_with_polyline_features_3<Labeled_mesh_domain> Mesh_domain;
 
 // Triangulation
@@ -39,9 +43,9 @@ typedef CGAL::Mesh_complex_3_in_triangulation_3<
 
 // Mesh Criteria
 typedef CGAL::Mesh_criteria_3<Tr> Mesh_criteria;
-typedef Mesh_criteria::Facet_criteria    Facet_criteria;
-typedef Mesh_criteria::Cell_criteria     Cell_criteria;
-typedef Mesh_criteria::Edge_criteria     Edge_criteria;
+typedef Mesh_criteria::Facet_criteria Facet_criteria;
+typedef Mesh_criteria::Cell_criteria Cell_criteria;
+typedef Mesh_criteria::Edge_criteria Edge_criteria;
 
 #include "mesh-pyutils.h"
 #include "mesh_implicit_domains.h"
@@ -106,11 +110,34 @@ py::list mesh_implicit_domains_boundaries()
     v.push_back(f2);
 
     // --- Domain for test case 1
+#if CGAL_VERSION_MINOR>12
+    // create_implicit_mesh_domain does not return a Mesh_domain_with_polyline_features_3 so we explicitly build one
+    auto domain = Mesh_domain{
+        Mesh_domain::create_implicit_mesh_domain(
+            CGAL::parameters::function = Function_wrapper{ v },
+            CGAL::parameters::bounding_object = K::Sphere_3(CGAL::ORIGIN, 5.*5.),
+            CGAL::parameters::relative_error_bound = 1e-6
+        )
+    };
+#else // CGAL_VERSION<=4.12
     Mesh_domain domain(v, K::Sphere_3(CGAL::ORIGIN, 5.*5.), 1e-6);
+#endif
+
     // --- Domain for test case 2
     //std::vector<std::string> vps;
     //vps.push_back("+-");
+//#if CGAL_VERSION_MINOR>12
+    // create_implicit_mesh_domain does not return a Mesh_domain_with_polyline_features_3 so we explicitly build one
+    //auto domain = Mesh_domain{
+    //    Mesh_domain::create_implicit_mesh_domain(
+    //        CGAL::parameters::function = Function_wrapper{v, vps},
+    //        CGAL::parameters::bounding_object = K::Sphere_3(CGAL::ORIGIN, 5.*5.),
+    //        CGAL::parameters::relative_error_bound = 1e-6
+    //    )
+    //};
+//#else // CGAL_VERSION<=4.12
     //Mesh_domain domain(Function_wrapper(v, vps), K::Sphere_3(CGAL::ORIGIN, 5.*5.));
+//#endif
 
     //typedef CGAL::Tag_true           Has_features;
     static_assert(std::is_same< CGAL::Tag_true, typename decltype(domain)::Has_features>::value, "Has feature!");

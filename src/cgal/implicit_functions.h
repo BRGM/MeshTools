@@ -23,9 +23,12 @@ double sphere_function (double x, double y, double z) // (c=(0,0,0), r=Sq_radius
 }
 
 
-
 template <typename FT, typename P>
+#if CGAL_VERSION_MINOR>12
+class FT_to_point_function_wrapper : public CGAL::cpp98::unary_function<P, FT>
+#else // CGAL_VERSION<=4.12
 class FT_to_point_function_wrapper : public CGAL::unary_function<P, FT>
+#endif
 {
   typedef FT (*Implicit_function)(FT, FT, FT);
   Implicit_function function;

@@ -50,6 +50,7 @@ class CMakeBuild(build_ext):
                 print('WARNING: The MESHTOOLS_WITH_CGAL_DIR environment variablereferences an non existing directory and will not be used!', file=sys.stderr)
             else:
                 cmake_args+= ['-DCGAL_DIR=' + os.path.abspath(CGAL_DIR)]
+                cmake_args+= ['-DBUILD_TESTING=0']
         except KeyError:
             print('WARNING: CGAL extensions will not be compiled!', file=sys.stderr)
             print('The MESHTOOLS_WITH_CGAL_DIR environment variable is used to point to the desired CGAL installation directory.', file=sys.stderr)
