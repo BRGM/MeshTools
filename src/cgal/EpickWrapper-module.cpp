@@ -227,8 +227,14 @@ void add_epick_wrapper(py::module& module)
         );
     })  
         .def("join", [](Triangulated_surface& self, const Triangulated_surface& other) {
-            self.join(other);
-        })
+        self.join(other);
+    })
+        .def("orient", [](Triangulated_surface& self, bool outward_orientation) {
+        CGAL::Polygon_mesh_processing::orient(
+            static_cast<typename Triangulated_surface::Base&>(self),
+            CGAL::Polygon_mesh_processing::parameters::outward_orientation( outward_orientation )
+        );
+    }, py::arg("outward_orientation") = true)
         .def("self_intersections", [](const Triangulated_surface& self) {
         typedef typename Triangulated_surface::Face_index Face_index;
         typedef std::pair<Face_index, Face_index> Intersecting_faces;
