@@ -42,15 +42,18 @@ class CMakeBuild(build_ext):
         cmake_args = ['-DPYTHON_EXECUTABLE=' + sys.executable]
         
         # this is where setuptools will build the module
-        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath("")))
+        setup_build_directory, setup_package_directory = os.path.split(extdir)
+        assert setup_package_directory==self.package
+        cmake_args+= ['-DCMAKE_INSTALL_PREFIX=' + setup_build_directory]
         # Link to CGAL directory
         try:
             CGAL_DIR = os.environ['MESHTOOLS_WITH_CGAL_DIR']
             if not os.path.isdir(CGAL_DIR):
-                print('WARNING: The MESHTOOLS_WITH_CGAL_DIR environment variablereferences an non existing directory and will not be used!', file=sys.stderr)
+                print('WARNING: The MESHTOOLS_WITH_CGAL_DIR environment variable references an non existing directory and will not be used!', file=sys.stderr)
             else:
                 cmake_args+= ['-DCGAL_DIR=' + os.path.abspath(CGAL_DIR)]
-                cmake_args+= ['-DBUILD_TESTING=0']
+                cmake_args+= ['-DBUILD_TESTING=0'] # not to build the CGAL test suite
         except KeyError:
             print('WARNING: CGAL extensions will not be compiled!', file=sys.stderr)
             print('The MESHTOOLS_WITH_CGAL_DIR environment variable is used to point to the desired CGAL installation directory.', file=sys.stderr)
