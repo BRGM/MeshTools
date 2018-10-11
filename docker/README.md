@@ -1,5 +1,3 @@
-:exclamation: The separation between build and run environments is not done yet. It should rely on the building of python wheels (cf. issue #2).
-
 The two repositories have docker files that are used to generate build and run environments for MeshTools.
 
 Log into the compass docker regisry:
