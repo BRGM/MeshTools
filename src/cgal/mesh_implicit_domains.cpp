@@ -1,6 +1,7 @@
 // This is directly taken from CGAL examples
 // cf. https://doc.cgal.org/latest/Mesh_3/examples.html
 
+#include <CGAL/version_macros.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Mesh_triangulation_3.h>
 #include <CGAL/Mesh_complex_3_in_triangulation_3.h>

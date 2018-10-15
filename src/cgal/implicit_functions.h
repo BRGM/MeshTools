@@ -1,3 +1,5 @@
+#include <CGAL/version_macros.h>
+
 ///////////////// Definitions of several famous surfaces /////////////////
 double sphere_function (double, double, double);  // (c=(0,0,0), r=1)
 double ellipsoid_function (double, double, double);  // (c=(0,0,0), r=1)
