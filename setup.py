@@ -47,16 +47,27 @@ class CMakeBuild(build_ext):
         assert setup_package_directory==self.package
         cmake_args+= ['-DCMAKE_INSTALL_PREFIX=' + setup_build_directory]
         # Link to CGAL directory
-        try:
-            CGAL_DIR = os.environ['MESHTOOLS_WITH_CGAL_DIR']
-            if not os.path.isdir(CGAL_DIR):
-                print('WARNING: The MESHTOOLS_WITH_CGAL_DIR environment variable references an non existing directory and will not be used!', file=sys.stderr)
-            else:
-                cmake_args+= ['-DCGAL_DIR=' + os.path.abspath(CGAL_DIR)]
-                cmake_args+= ['-DBUILD_TESTING=0'] # not to build the CGAL test suite
-        except KeyError:
+        def try_cgal_dir(variable):
+            try:
+                directory = os.environ[variable]
+                if os.path.isdir(directory):
+                    return directory
+                print('WARNING: The %s environment variable references an non existing directory and will not be used!' % variable, file=sys.stderr)
+            except KeyError:
+                pass
+        def find_cgal_dir():
+            directory = try_cgal_dir('MESHTOOLS_WITH_CGAL_DIR')
+            if directory is None:
+                directory = try_cgal_dir('CGAL_DIR')
+            return directory
+        CGAL_DIR = find_cgal_dir()
+        if CGAL_DIR:
+            cmake_args+= ['-DCGAL_DIR=' + os.path.abspath(CGAL_DIR)]
+            cmake_args+= ['-DBUILD_TESTING=0'] # not to build the CGAL test suite
+            cmake_args+= ['-DCGAL_Boost_USE_STATIC_LIBS=1'] # to include the boost libraries and avoid linking problems
+        else:
             print('WARNING: CGAL extensions will not be compiled!', file=sys.stderr)
-            print('The MESHTOOLS_WITH_CGAL_DIR environment variable is used to point to the desired CGAL installation directory.', file=sys.stderr)
+            print('The CGAL_DIR or MESHTOOLS_WITH_CGAL_DIR environment variables can be used to point to the desired CGAL installation directory.', file=sys.stderr)
         build_args = ['--target', 'install'] # we will build the install target
         # config defaults to Debug on Windows if not passed to the build tool
         cfg = 'Debug' if self.debug else 'Release'
