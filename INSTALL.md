@@ -27,7 +27,9 @@ available through the package manager (e.g. `sudo apt-get install ccmake`).
 
 MeshTools can optionally be built with CGAL extensions.
 
-:exclamation: Beware that from commit 3571466f342bd8e048fbc37368225b1ae7d14b6b you will need a patched version of CGAL 4.12.1 (cf. https://github.com/CGAL/cgal/pull/3377). Please note also that for the moment MeshTools is not compliant with CGAL 4.13.
+:exclamation: Beware that from commit 3571466f342bd8e048fbc37368225b1ae7d14b6b
+you will need a patched version of CGAL 4.12.1
+(cf. https://github.com/CGAL/cgal/pull/3377). 
 
 On Linux you may just install the ad-hoc package using your favourite package
 manager.
@@ -55,11 +57,13 @@ CGAL brings in a dependency to a few [boost](https://www.boost.org/) libraries.
 
 ### Packaged dependencies
 
-MehsTools is packaged with the following third parties that are grouped in the `thirdparties`
-directory and automatically compiled through the cmake build system :
-* [pybind11](https://pybind11.readthedocs.io/en/stable/) v.2.2.3 which is a wonderfull header only library to interface python and C++ code,
+MehsTools is packaged with the following third parties that are grouped in the
+`thirdparties` directory and automatically compiled through the cmake build
+system:
+* [pybind11](https://pybind11.readthedocs.io/en/stable/) v.2.2.3 which
+    is a wonderfull header only library to interface python and C++ code,
 * the [mapbox implementation](https://github.com/mapbox/variant) of the C++
-[variant](http://en.cppreference.com/w/cpp/utility/variant)
+    [variant](http://en.cppreference.com/w/cpp/utility/variant)
 and [optional](http://en.cppreference.com/w/cpp/utility/optional) concepts.
 
 # Building and installation
@@ -86,8 +90,8 @@ will directly directly affect the use of the module elsewhere :
 pip install -e .
 ```
 
-Changes to the C/C++ source files will only be available if the code is recompiled.
-To do so, look for the build directory (it should be hidden in the
+Changes to the C/C++ source files will only be available if the code is
+recompiled. To do so, look for the build directory (it should be hidden in the
 `build` directory on the top level of the MeshTools package repository).
 From there you can use cmake to run your underlying native build tool :
 
@@ -104,8 +108,9 @@ make install
 ## Building through CMake
 
 Just follow the steps [here](https://cmake.org/runningcmake/), prefer
-*out of source build*. The source code is the directory that you have cloned using
-git, it is the top level directory where you can find a `CMakeLists.txt` file.
+*out of source build*. The source code is the directory that you have cloned
+using git, it is the top level directory where you can find a `CMakeLists.txt`
+file.
 
 Once the library is built you will have all of the python modules composing
 MeshTools in the MeshTools directory. These can be imported into python 
