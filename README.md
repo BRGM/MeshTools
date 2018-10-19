@@ -6,7 +6,13 @@ For the moment MeshTools essentially serves as a pre and post-processing module
 for the ComPASS code. Yet, there is no plan to make it an exhaustive tool for
 mesh management and or generic conversion operations. If you look for such
 packages you may also consider alternative projects[^altmesh] such as
-[RingMesh](https://github.com/ringmesh/RINGMesh), [meshio](https://pypi.org/project/meshio/), the [ Open-Asset-Importer-Library](http://www.assimp.org/) and its [python bindings](https://pypi.org/project/pyassimp/) that you can also find in [asssimp's main code repository](https://github.com/assimp/assimp)...
+[RingMesh](https://github.com/ringmesh/RINGMesh),
+[meshio](https://pypi.org/project/meshio/), the
+[ Open-Asset-Importer-Library](http://www.assimp.org/) and its
+[python bindings](https://pypi.org/project/pyassimp/)
+that you can also find in
+[asssimp's main code repository](https://github.com/assimp/assimp)...
+
 [^altmesh]: any other reference is welcome here...
 
 There is still no documentation but you may start with the
