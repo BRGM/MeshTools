@@ -9,4 +9,8 @@ set_target_properties(_MeshTools
     CXX_EXTENSIONS NO
 )
 
+# A first test on compressed storage structure
+add_executable(Chunks_chain Chunks_chain.cpp)
+
 install(TARGETS _MeshTools DESTINATION ${MESHTOOLS_PYTHON_PACKAGE_NAME} EXPORT MeshTools)
+install(TARGETS Chunks_chain DESTINATION tests/experimental EXPORT MeshTools)
