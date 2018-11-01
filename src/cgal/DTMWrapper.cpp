@@ -67,6 +67,32 @@ auto compute_depths(const DTM& dtm, py::array_t<Coordinate_type, py::array::c_st
 	return result;
 }
 
+auto dtm_as_arrays(const DTM& dtm)
+{
+    const auto& shapes = dtm.shapes();
+    const auto n = shapes.size();
+    static_assert(sizeof(Point) == 3 * sizeof(double), "Inconsistent sizes in memory!");
+    auto vertices = py::array_t<double, py::array::c_style>(
+        { static_cast<std::size_t>(3 * n), static_cast<std::size_t>(3) }
+    );
+    auto triangles = py::array_t<std::size_t, py::array::c_style>(
+        { static_cast<std::size_t>(n), static_cast<std::size_t>(3) }
+    );
+    auto pv = reinterpret_cast<Point*>(vertices.mutable_data(0, 0));
+    auto pt = triangles.mutable_data(0, 0);
+    std::size_t i = 0;
+    for (auto&& triangle : shapes) {
+        for (int k = 0; k < 3; ++k) {
+            *(pv) = triangle[k];
+            ++pv;
+            (*pt) = i;
+            ++pt;
+            ++i;
+        }
+    }
+    return py::make_tuple(vertices, triangles);
+}
+
 void add_dtm_wrapper(py::module& module)
 {
 
@@ -74,7 +100,9 @@ void add_dtm_wrapper(py::module& module)
 
 	py::class_<DTM>(module, "DTM")
 		.def("depths", &compute_depths)
-		.def("nb_triangles", &DTM::number_of_shapes);
+		.def("nb_triangles", &DTM::number_of_shapes)
+        .def("as_arrays", &dtm_as_arrays)
+        ;
 
 	module.def("dtm_from_triangles", &dtm_from_triangles);
 	module.def("triangulate_points", &triangulate_points);

@@ -79,7 +79,7 @@ namespace ExperimentalBRGM
 		/* return true if MNT is above point P, i.e. O is below surface */
 		bool is_above(const Point& P) const { return depth(P)>0; }
 		auto number_of_shapes() const { return patches.size(); }
-		const auto& shapes() const { return shapes; }
+		const auto& shapes() const { return patches; }
 	};
 
 	template <typename Kernel, typename PointIterator>
