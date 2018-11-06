@@ -5,11 +5,9 @@ COPY ./ /source/MeshTools
 RUN cd ./MeshTools && python3 setup.py bdist_wheel
 
 From registry.gitlab.inria.fr/charms/meshtools/run-environment:latest
+WORKDIR /wheels/
+COPY --from=builder /source/MeshTools/dist/MeshTools-0.0.1-cp36-cp36m-linux_x86_64.whl .
+RUN pip3 install MeshTools-0.0.1-cp36-cp36m-linux_x86_64.whl
+
 WORKDIR /data/
-COPY --from=builder /source/MeshTools/dist/MeshTools-*-cp36-cp36m-linux_x86_64.whl .
-# we are assuming only one wheel was copied
-RUN pip3 install *.whl
-RUN rm *.whl
-
 ENTRYPOINT ["/bin/bash"]
-
