@@ -28,7 +28,7 @@ available through the package manager (e.g. `sudo apt-get install ccmake`).
 MeshTools can optionally be built with CGAL extensions.
 
 :exclamation: Beware that from commit 3571466f342bd8e048fbc37368225b1ae7d14b6b
-you will need a version of CGAL that integrate the following
+you will need a version of CGAL that integrates the following
 [patch](https://github.com/CGAL/cgal/pull/3377). 
 
 On Linux you may just install the ad-hoc package using your favourite package
