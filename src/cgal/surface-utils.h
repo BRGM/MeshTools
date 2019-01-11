@@ -155,4 +155,5 @@ auto extract_submesh(const Triangulated_surface& mesh, Face_iterator first, Face
         submesh.add_face(triangle[0], triangle[1], triangle[2]);
         triangle.clear();
     }
+    return submesh;
 }
