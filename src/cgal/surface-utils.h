@@ -8,7 +8,7 @@ template <typename Constraint_map>
 auto collect_constrained_edges_as_curves(const Triangulated_surface& S, const Constraint_map& constraints)
 {
 
-    typedef typename Triangulated_surface::Base Mesh;
+    typedef Triangulated_surface Mesh;
     typedef typename Mesh::Vertex_index Vertex_index;
     typedef typename Mesh::Edge_index Edge_index;
 
@@ -99,9 +99,9 @@ template <typename Output_iterator>
 auto intersection_curves(Triangulated_surface& S1, Triangulated_surface& S2, Output_iterator out)
 {
 
-    typedef typename Triangulated_surface::Base Mesh;
-    typedef Mesh::Vertex_index Vertex_index;
-    typedef Mesh::Edge_index Edge_index;
+    typedef Triangulated_surface Mesh;
+    typedef typename Mesh::Vertex_index Vertex_index;
+    typedef typename Mesh::Edge_index Edge_index;
 
     auto add_constraint_map = [](Mesh& mesh) {
         auto result = mesh.add_property_map<Edge_index, bool>("e:constrained", false);

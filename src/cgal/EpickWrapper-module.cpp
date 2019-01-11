@@ -4,6 +4,7 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
+#include <CGAL/Polygon_mesh_processing/connected_components.h>
 
 #include <pybind11/numpy.h>
 
@@ -174,7 +175,31 @@ void add_epick_wrapper(py::module& module)
         return tsurf;
     }))
         .def("as_arrays", [](const Triangulated_surface& self) {
-        return mesh_as_arrays(static_cast<const typename Triangulated_surface::Base&>(self));
+        return mesh_as_arrays(self);
+    })
+        .def("submeshes", [](const Triangulated_surface& self) {
+          std::map<Triangulated_surface::Face_index, Triangulated_surface::faces_size_type> facemap_container;
+          boost::associative_property_map< std::map<Triangulated_surface::Face_index, Triangulated_surface::faces_size_type> > facemap(facemap_container);
+
+          const size_t num_submeshes = CGAL::Polygon_mesh_processing::connected_components(self, facemap);
+
+          if (num_submeshes == 1) {
+            return std::vector<Triangulated_surface> { self };
+          }
+
+          std::vector<Triangulated_surface> submeshes;
+          submeshes.reserve(num_submeshes);
+          for (size_t id = 0; id < num_submeshes; id++) {
+            // CHECKME Would it be more efficient to extract a sub mesh instead of copying the whole mesh and removing all connected components but one? 
+            //         ...it would require creating a mesh from scratch with the vertices and faces of the submesh.
+
+            Triangulated_surface submesh(self);
+            CGAL::Polygon_mesh_processing::keep_connected_components(submesh, std::vector<std::size_t>{ id }, facemap);
+            submesh.collect_garbage();
+            submeshes.push_back(submesh);
+          }
+
+          return submeshes;
     })
         .def("face_centers", [](const Triangulated_surface& self) {
         auto centers = py::array_t<double, py::array::c_style>{
@@ -186,10 +211,7 @@ void add_epick_wrapper(py::module& module)
         fv.reserve(3);
         for (auto&& f : self.faces()) {
             fv.clear();
-            for (auto&& v : CGAL::vertices_around_face(
-                    self.halfedge(f),
-                    static_cast<const typename Triangulated_surface::Base&>(self)
-                )) {
+            for (auto&& v : CGAL::vertices_around_face(self.halfedge(f), self)) {
                 fv.emplace_back(v);
             }
             assert(fv.size() == 3);
@@ -209,10 +231,7 @@ void add_epick_wrapper(py::module& module)
         auto premove = where.data(0);
         for (auto&& f : self.faces()) {
             if (*premove) {
-                CGAL::Euler::remove_face(
-                    self.halfedge(f), 
-                    static_cast<typename Triangulated_surface::Base&>(self)
-                );
+                CGAL::Euler::remove_face(self.halfedge(f), self);
             }
             ++premove;
         }
@@ -230,9 +249,9 @@ void add_epick_wrapper(py::module& module)
         self.join(other);
     })
         .def("orient", [](Triangulated_surface& self, bool outward_orientation) {
+        namespace parameters = CGAL::Polygon_mesh_processing::parameters;
         CGAL::Polygon_mesh_processing::orient(
-            static_cast<typename Triangulated_surface::Base&>(self),
-            CGAL::Polygon_mesh_processing::parameters::outward_orientation( outward_orientation )
+            self, parameters::outward_orientation( outward_orientation )
         );
     }, py::arg("outward_orientation") = true)
         .def("self_intersections", [](const Triangulated_surface& self) {
@@ -240,8 +259,7 @@ void add_epick_wrapper(py::module& module)
         typedef std::pair<Face_index, Face_index> Intersecting_faces;
         std::vector<Intersecting_faces> self_intersections;
         CGAL::Polygon_mesh_processing::self_intersections(
-            static_cast<const typename Triangulated_surface::Base&>(self),
-            std::back_inserter(self_intersections)
+            self, std::back_inserter(self_intersections)
         );
         if (self_intersections.empty()) return py::object{ py::none{} };
         auto result = py::list{};
@@ -259,11 +277,7 @@ void add_epick_wrapper(py::module& module)
 
     module.def("corefine", [](Triangulated_surface& S1, Triangulated_surface& S2) {
         const auto nv = S1.number_of_vertices();
-        CGAL::Polygon_mesh_processing::corefine(
-            static_cast<typename Triangulated_surface::Base&>(S1),
-            static_cast<typename Triangulated_surface::Base&>(S2),
-            true
-        );
+        CGAL::Polygon_mesh_processing::corefine(S1, S2, true);
     });
 
     module.def("intersection_curves", [](Triangulated_surface& S1, Triangulated_surface& S2) {

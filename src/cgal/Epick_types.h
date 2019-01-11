@@ -16,11 +16,7 @@ struct Polylines : std::list<Polyline> {
     using std::list<Polyline>::list;
 };
 
-struct Triangulated_surface : CGAL::Surface_mesh<Point> {
-    typedef CGAL::Surface_mesh<Point> Base;
-    using Base::Surface_mesh;
-    //using CGAL::Surface_mesh<Point>::Vertex_index;
-};
+using Triangulated_surface = CGAL::Surface_mesh<Point>;
 
 struct EpickException : std::runtime_error
 {
