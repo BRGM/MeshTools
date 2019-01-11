@@ -134,3 +134,25 @@ auto intersection_curves(Triangulated_surface& S1, Triangulated_surface& S2, Out
 
 }
 
+template <typename Face_iterator>
+auto extract_submesh(const Triangulated_surface& mesh, Face_iterator first, Face_iterator last)
+{
+    typedef typename Triangulated_surface::Vertex_index Vertex_index;
+    Triangulated_surface submesh;
+    std::map<Vertex_index, Vertex_index> sv; // submesh vertex index
+    std::vector<Vertex_index> triangle;
+    triangle.reserve(3);
+    for (auto pf = first; pf != last; ++pf) {
+        for (auto v : CGAL::vertices_around_face(mesh.halfedge(*pf), mesh)) {
+            auto p = sv.lower_bound(v);
+            if (p == sv.end()) {
+                p = sv.insert(p, { v, submesh.add_vertex(mesh.point(v)) });
+            }
+            assert(p!=sv.end());
+            triangle.push_back(p->second);
+        }
+        assert(triangle.size() == 3);
+        submesh.add_face(triangle[0], triangle[1], triangle[2]);
+        triangle.clear();
+    }
+}
