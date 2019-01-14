@@ -5,13 +5,11 @@
 #include "C3t3Wrapper-module.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Surface_mesh.h>
 
 #include "mesh-pyutils.h"
 #include "mesh_implicit_domains.h"
 #include "implicit_functions.h"
-
-typedef CGAL::Surface_mesh<typename CGAL::Epick::Point_3> Mesh;
+#include "Epick_types.h"
 
 namespace py = pybind11;
 
@@ -28,12 +26,6 @@ void add_c3t3_wrapper(py::module& module)
 {
 
     module.doc() = "pybind11 homemade CGAL C3t3 interface";
-
-    // quick and dirty, should be elsewhere
-    py::class_<Mesh>(module, "SMesh")
-        .def("as_arrays", [](const Mesh& self) {
-        return mesh_as_arrays(self);
-    });
 
 	py::class_<C3t3Wrapper>(module, "C3t3")
         .def(py::init([](const std::string& filename, bool binary)
@@ -68,12 +60,12 @@ void add_c3t3_wrapper(py::module& module)
                 output.close();
             })
                 .def("collect_boundaries", [](C3t3Wrapper& self, typename C3t3Wrapper::Domain_tag subdomain, bool normals_point_outside) {
-                Mesh mesh;
+                Triangulated_surface mesh;
                 copy_boundary_to_surface_mesh(self.get(), subdomain, mesh, normals_point_outside);
                 return mesh;
             }, py::arg("subdomain"), py::arg("normals_point_outside") = true)
                 .def("collect_all_boundaries", [](C3t3Wrapper& self, bool normals_point_outside) {
-                return collect_all_boundaries_as_surface_meshes<Mesh>(self.get(), normals_point_outside);
+                return collect_all_boundaries_as_surface_meshes<Triangulated_surface>(self.get(), normals_point_outside);
             }, py::arg("normals_point_outside") = true)
                 ;
 

@@ -182,23 +182,23 @@ void add_epick_wrapper(py::module& module)
           boost::associative_property_map< std::map<Triangulated_surface::Face_index, Triangulated_surface::faces_size_type> > facemap(facemap_container);
 
           const size_t num_submeshes = CGAL::Polygon_mesh_processing::connected_components(self, facemap);
+          py::list submeshes;
 
-          if (num_submeshes == 1) {
-            return std::vector<Triangulated_surface> { self };
+          if (num_submeshes == 1) { // No need to extract, skip the hard work.
+            submeshes.append(self);
+            return submeshes;
           }
 
-          std::vector<Triangulated_surface> submeshes;
-          submeshes.reserve(num_submeshes);
-          for (size_t id = 0; id < num_submeshes; id++) {
-            // CHECKME Would it be more efficient to extract a sub mesh instead of copying the whole mesh and removing all connected components but one? 
-            //         ...it would require creating a mesh from scratch with the vertices and faces of the submesh.
-
-            Triangulated_surface submesh(self);
-            CGAL::Polygon_mesh_processing::keep_connected_components(submesh, std::vector<std::size_t>{ id }, facemap);
-            submesh.collect_garbage();
-            submeshes.push_back(submesh);
+          typedef typename Triangulated_surface::Face_index Face_index;
+          typedef std::vector<Face_index> Mesh_part;
+          std::vector<Mesh_part> parts{ num_submeshes };
+          for (const auto& f : facemap_container) {
+            parts[f.second].push_back(f.first);
           }
-
+          
+          for (const auto& part : parts) {
+            submeshes.append(extract_submesh(self, begin(part), end(part)));
+          }
           return submeshes;
     })
         .def("face_centers", [](const Triangulated_surface& self) {
