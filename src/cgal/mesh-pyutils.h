@@ -33,7 +33,7 @@ auto mesh_as_arrays(const Mesh& mesh)
         auto p = reinterpret_cast<New_index*>(triangles.request().ptr);
         for (auto&& f : mesh.faces()) {
             assert(mesh.degree(f) == 3);
-            for (auto&& v : CGAL::vertices_around_face(mesh.halfedge(f), mesh)) {
+            for (auto&& v : vertices_around_face(mesh.halfedge(f), mesh)) {
                 *(p++) = reindex[v];
             }
         }
