@@ -1,7 +1,7 @@
 // This is directly taken from CGAL examples
 // cf. https://doc.cgal.org/latest/Mesh_3/examples.html
 
-#include <CGAL/version_macros.h>
+#include <CGAL/config.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Mesh_triangulation_3.h>
 #include <CGAL/Mesh_complex_3_in_triangulation_3.h>
@@ -27,7 +27,7 @@ typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef FT_to_point_function_wrapper<K::FT, K::Point_3> Function;
 typedef CGAL::Implicit_multi_domain_to_labeling_function_wrapper<Function> Function_wrapper;
 typedef Function_wrapper::Function_vector Function_vector;
-#if CGAL_VERSION_MINOR>12
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,12,0)
 typedef CGAL::Labeled_mesh_domain_3<K> Labeled_mesh_domain;
 #else // CGAL_VERSION<=4.12
 typedef CGAL::Labeled_mesh_domain_3<Function_wrapper, K> Labeled_mesh_domain;
@@ -111,7 +111,7 @@ py::list mesh_implicit_domains_boundaries()
     v.push_back(f2);
 
     // --- Domain for test case 1
-#if CGAL_VERSION_MINOR>12
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,12,0)
     // create_implicit_mesh_domain does not return a Mesh_domain_with_polyline_features_3 so we explicitly build one
     auto domain = Mesh_domain{
         Mesh_domain::create_implicit_mesh_domain(
@@ -127,7 +127,7 @@ py::list mesh_implicit_domains_boundaries()
     // --- Domain for test case 2
     //std::vector<std::string> vps;
     //vps.push_back("+-");
-//#if CGAL_VERSION_MINOR>12
+//#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,12,0)
     // create_implicit_mesh_domain does not return a Mesh_domain_with_polyline_features_3 so we explicitly build one
     //auto domain = Mesh_domain{
     //    Mesh_domain::create_implicit_mesh_domain(

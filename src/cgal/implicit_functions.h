@@ -1,4 +1,4 @@
-#include <CGAL/version_macros.h>
+#include <CGAL/config.h>
 
 ///////////////// Definitions of several famous surfaces /////////////////
 double sphere_function (double, double, double);  // (c=(0,0,0), r=1)
@@ -26,7 +26,7 @@ double sphere_function (double x, double y, double z) // (c=(0,0,0), r=Sq_radius
 
 
 template <typename FT, typename P>
-#if CGAL_VERSION_MINOR>12
+#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,12,0)
 class FT_to_point_function_wrapper : public CGAL::cpp98::unary_function<P, FT>
 #else // CGAL_VERSION<=4.12
 class FT_to_point_function_wrapper : public CGAL::unary_function<P, FT>
