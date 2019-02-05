@@ -167,7 +167,7 @@ def grid2tets(shape, extent=(1., 1., 1.)):
     
     return vertices, tets
 
-def steps2hex(steps_along_axes, idtype=np.int):
+def steps2hex(steps_along_axes, output_ijk=False, idtype=np.int):
     x, y, z = (np.asarray(steps) for steps in steps_along_axes)
     assert all(len(a.shape)==1 for a in (x, y, z))
     # number of nodes
@@ -194,9 +194,19 @@ def steps2hex(steps_along_axes, idtype=np.int):
     hexs[:(ncx*ncy), 4:] = hexs[:(ncx*ncy), :4] + nx*ny
     for k in range(1, ncz):
         hexs[k*(ncx*ncy):(k+1)*(ncx*ncy), :] = hexs[(k-1)*(ncx*ncy):k*(ncx*ncy), :] + nx*ny
+    if output_ijk:
+        ijk = np.zeros((ncx*ncy*ncz, 3), dtype='int')
+        ijk[:, 0] = np.tile(np.arange(ncx), ncy * ncz)        
+        ijk[:, 1] = np.tile(
+                np.hstack([np.tile(j, ncx) for j in range(ncy)]), ncz)
+        ijk[:, 2] = np.hstack([np.tile(k, ncx * ncy) for k in range(ncz)])        
+        return vertices, hexs, ijk
     return vertices, hexs
 
 def grid2hexs(idtype=np.int, **kwargs):
+    output_ijk = 'output_ijk' in kwargs
+    if output_ijk:
+        del kwargs['output_ijk']
     if 'gridinfo' in kwargs:
         gridinfo = kwargs['gridinfo']
     else:
@@ -204,4 +214,4 @@ def grid2hexs(idtype=np.int, **kwargs):
     return steps2hex([
         np.linspace(O, O + L, n + 1) # nb cells -> nb nodes
         for O, L, n in zip(gridinfo.origin, gridinfo.extent, gridinfo.shape)
-    ], idtype=idtype)
+    ], output_ijk=output_ijk, idtype=idtype)
