@@ -28,15 +28,11 @@ def read_file_argument(grdecl):
     else:
         grdecl = newfile
     def generator_include(f):
-        line = next(f)
-        while line:
+        for line in f:
             if 'INCLUDE' in line:
                 yield re.findall("'(.*)'", next(f))[0]
-            line = next(f)
-    names = []
     with open(grdecl) as f:
-        for name in generator_include(f):
-            names.append(name)
+        names = list(generator_include(f))
     for name in names:
         oldfile = '{0}/{1}'.format(dirname, name)
         newfile = '{0}/{1}_PYTHON'.format(dirname, name)
@@ -196,7 +192,7 @@ class PetrelGrid(object):
                             tmp = np.fromfile(f, sep=' ', count=2*self.nx).reshape(
                                                     (self.nx, 2))
                             self.zcorn[:, j, k, 6:8] = tmp
-                        print("Variable ZCORN de la couche {0} lue".format(k + 1))
+                        # print("Variable ZCORN de la couche {0} lue".format(k + 1))
                     break
                 line = f.readline()
 
@@ -487,9 +483,8 @@ class PetrelGrid(object):
                     assert(nmax + maxnode == len(self.pvertices) - 1)
                 maxnode = len(self.pvertices) - 1
 
-if __name__ == "__main__":
-    grdecl = sys.argv[1]
-    grdecl, kwargs = read_file_argument(grdecl)
+def import_eclipse_grid(filename):
+    grdecl, kwargs = read_file_argument(filename)
     pgrid = PetrelGrid(grdecl, **kwargs)
     pvertices, phexagons = pgrid.process()
     permx, permy, permz = pgrid.get_perm()
@@ -518,6 +513,10 @@ if __name__ == "__main__":
     for elt in phexagons:
         cellnodes.append(MT.Hexahedron(elt))
     mesh.connectivity.update_from_cellnodes()
+    return mesh, (permx, permy, permz)
+
+if __name__ == "__main__":
+    mesh = import_eclipse_grid(sys.argv[1])
     offsets, cellsnodes = mesh.cells_nodes_as_COC()
     vtkw.write_vtu(vtkw.vtu_doc_from_COC(mesh.vertices_array(), 
                 np.array(offsets[1:], copy=False), # no first zero offset for vtk 
