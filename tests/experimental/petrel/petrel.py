@@ -1,11 +1,61 @@
+# Dans un terminal :
+# python petrel.py chemin_du_fichier_petrel
 import numpy as np
-# import pylab as plt
+import sys, re, os
 import MeshTools as MT
 import MeshTools.vtkwriters as vtkw
 import MeshTools.PetrelMesh as PM
+from MeshTools.RawMesh import RawMesh
 # 2--3
 # |  |
 # 0--1
+
+def read_file_argument(grdecl):
+    kwargs = {}
+    #rep = ('/home/jpvergnes/Travail/projets/CHARMS/'
+    #        'petrel/maillage_CPG_albien_mofac/')
+    #grdecl = rep + 'MOFAC_albien_eclips.GRDECL'
+    dirname = os.path.dirname(grdecl)
+    basename = os.path.basename(grdecl)
+    newfile = '{0}_PYTHON'.format(grdecl)
+    if not os.path.isfile(newfile):
+        with open(grdecl) as f:
+            for line in f:
+                if '*' in line:
+                    rewrite_file(grdecl, newfile)
+                    grdecl = newfile
+                    break
+    else:
+        grdecl = newfile
+    def generator_include(f):
+        line = next(f)
+        while line:
+            if 'INCLUDE' in line:
+                yield re.findall("'(.*)'", next(f))[0]
+            line = next(f)
+    names = []
+    with open(grdecl) as f:
+        for name in generator_include(f):
+            names.append(name)
+    for name in names:
+        oldfile = '{0}/{1}'.format(dirname, name)
+        newfile = '{0}/{1}_PYTHON'.format(dirname, name)
+        with open(oldfile) as f:
+            for line in f:
+                if 'Generated : Petrel' in line:
+                    break
+            name_variable = line.split()[0]
+            if os.path.isfile(newfile):
+                kwargs[name_variable] = newfile
+            if not os.path.isfile(newfile):
+                for line in f:
+                    if '*' in line:
+                        rewrite_file(oldfile, newfile)
+                        kwargs[name_variable] = newfile
+                        break
+                else:
+                    kwargs[name_variable] = oldfile
+    return grdecl, kwargs
 
 def rewrite_file(fichier, fichier_out):
     fout = open(fichier_out, 'w')
@@ -31,10 +81,12 @@ def rewrite_file(fichier, fichier_out):
 
 class PetrelGrid(object):
     def __init__(self, mainfile, **kwargs):
-        zcornfile = kwargs.get('zcornfile', mainfile)
-        coordfile = kwargs.get('coordfile', mainfile)
-        actnumfile = kwargs.get('actnumfile', mainfile)
-        propfaciesfile = kwargs.get('propfaciesfile', mainfile)
+        zcornfile = kwargs.get('ZCORN', mainfile)
+        coordfile = kwargs.get('COORD', mainfile)
+        actnumfile = kwargs.get('ATNUM', mainfile)
+        permxfile = kwargs.get('PERMX', mainfile)
+        permyfile = kwargs.get('PERMY', mainfile)
+        permzfile = kwargs.get('PERMZ', mainfile)
         with open(mainfile) as f:
             for line in f:
                 if line.startswith('MAPAXES'):
@@ -47,7 +99,9 @@ class PetrelGrid(object):
         self._read_zcorn(zcornfile)
         # Vérifier que la correspondance des couches est cohérente (pas de trous)
         assert np.all(self.zcorn[:, :, 1:, :4] == self.zcorn[:, :, :-1, 4:]) 
-        self.propfacies = self._read_grid(propfaciesfile, 'FACIES')
+        self.permx = self._read_grid(permxfile, 'PERMX')
+        self.permy = self._read_grid(permyfile, 'PERMX')
+        self.permz = self._read_grid(permzfile, 'PERMY')
         self.x = np.zeros(self.zcorn.shape)
         self.y = np.zeros(self.zcorn.shape)
         pilars = coord.reshape((self.nx+1, self.ny+1, 6), order='F')
@@ -207,6 +261,21 @@ class PetrelGrid(object):
                         )
                         hexagons.append(hexagon)
         return vertices, MT.idarray(hexagons)
+    
+    def get_perm(self):
+        permx, permy, permz = [], [], []
+        for i in range(self.nx):
+            for j in range(self.ny):
+                for k in range(self.nz):
+                    if self.mask_cells[i,j,k] == 1:
+                        if self.permx is not None:
+                            permx.append(self.permx[i,j,k])
+                        if self.permy is not None:
+                            permy.append(self.permy[i,j,k])
+                        if self.permz is not None:
+                            permz.append(self.permz[i,j,k])
+        return permx, permy, permz
+        
 
     def get_faces(self, cells):
         faces = []
@@ -238,7 +307,7 @@ class PetrelGrid(object):
         return self.pvertices, self.new_faces_nodes, self.new_cells_faces
 
     def corrections_faces(self, cells_faces, face_nodes, shift):
-        maxnode = np.max(self.new_faces_nodes)
+        maxnode = len(self.pvertices)
         # Pour le moment, uniquement les failles selon x
         for ix in range(self.nx - shift[0]):
             for jy in range(self.ny - shift[1]):
@@ -259,75 +328,107 @@ class PetrelGrid(object):
                 frontl = face_nodes[cellsfacel][:,2:]
                 nodesfront = np.unique(np.concatenate([frontr, frontl]))
                 nodesback = np.unique(np.concatenate([backr, backl]))
-                ordrepilierback = np.argsort(self.pvertices[nodesback][:,2])
                 ordrepilierfront = np.argsort(self.pvertices[nodesfront][:,2])
-                minval = np.min(np.concatenate([nodesback, nodesfront]))
+                ordrepilierback = np.argsort(self.pvertices[nodesback][:,2])
                 # Vertices des piliers plan yz
                 numberback = np.array(nodesback)[ordrepilierback]
                 numberfront = np.array(nodesfront)[ordrepilierfront]
                 verticesback = self.pvertices[nodesback][ordrepilierback]
                 verticesfront = self.pvertices[nodesfront][ordrepilierfront]
                 numbers = np.concatenate([numberback, numberfront])
-                segments1 = face_nodes[cellsfacel][:,[0,3,1,2]].reshape(
+                seg_nback = np.arange(len(numberback))
+                seg_nfront = np.arange(len(numberback), len(numbers))
+                segmentsl = face_nodes[cellsfacel][:,[0,3,1,2]].reshape(
                         len(cellsfacel)*2, 2)
-                segments1 = np.unique(segments1, axis=0)
-                segments2 = face_nodes[cellsfacer][:,[0,3,1,2]].reshape(
+                segmentsl = np.unique(segmentsl, axis=0)
+                segmentsr = face_nodes[cellsfacer][:,[0,3,1,2]].reshape(
                         len(cellsfacer)*2, 2)
-                segments2 = np.unique(segments2, axis=0)
+                segmentsr = np.unique(segmentsr, axis=0)
                 lsegments = [[], []]
-                for iseg, segs in enumerate([segments1, segments2]):
+                for iseg, segs in enumerate([segmentsl, segmentsr]):
                     for segment in segs:
                         i = np.where(numberback == segment[0])[0][0]
                         j = np.where(numberfront == segment[1])[0][0]
-                        lsegments[iseg].append([i, len(nodesback) + j])
+                        new_segment = [seg_nback[i], seg_nfront[j]]
+                        if new_segment not in lsegments[iseg]:
+                            lsegments[iseg].append(new_segment)
                 tsegments = np.concatenate(lsegments)
-                tsegments = np.unique(tsegments, axis=0)
                 tsegments = np.array(tsegments, dtype=np.int32)
-                # Normalisation sur les nouveaux repères
-                nvback = np.zeros(verticesback.shape)
-                nvfront = np.ones(verticesfront.shape)
-                zall = np.concatenate([verticesback[:,2], verticesfront[:,2]])
-                for nv, v in zip([nvback, nvfront],
-                        [verticesback, verticesfront]):
-                    z = v[:, 2]
-                    z = (z-zall.min())/(zall.max()-zall.min())
-                    nv[:, 2] = z
-                nv = np.concatenate([nvback, nvfront])
-                print(nv)
-                #nv = np.round(nv, 5)
-                # Triangulation
-                #if [65, 67] in backr:
-                #    import ipdb; ipdb.set_trace()
+                # Normalisation sur les nouveaux repèries
+                def pilar_referential(pts):
+                    z = pts[:, 2]
+                    kmin = np.argmin(z)
+                    kmax = np.argmax(z)
+                    e = pts[kmax]-pts[kmin]
+                    return pts[kmin], e
+                Oback, uback = pilar_referential(verticesback)
+                Ofront, ufront = pilar_referential(verticesfront)
+                nvback = np.zeros((verticesback.shape[0], 2))
+                nvfront = np.ones((verticesfront.shape[0], 2))
+                def new_coord(pilarpts, O, e): 
+                    res = np.sum((pilarpts-O)*e, axis=1)
+                    e2 = np.sum(e*e)
+                    assert e2>0
+                    res/= e2
+                    return res
+                nvback[:, 1] = new_coord(verticesback, Oback, uback)
+                nvfront[:, 1] = new_coord(verticesfront, Ofront, ufront)
+                nv = np.vstack([nvback, nvfront])
                 uv, triangles, components, faces = PM.mesh(
-                        nv[:, 1:].astype('float64'), tsegments)
-                #uv = np.round(uv, 5)
-                tcenters = np.vstack([uv[triangle].mean(axis=0) for triangle in triangles])
+                        nv.astype('float64'), tsegments)
+                nv2 = np.reshape(uv[:,0], (-1, 1)) * ( 
+                        Ofront + np.tensordot(uv[:,1],  ufront, axes=0)
+                )
+                nv2+= np.reshape(1-uv[:,0], (-1, 1)) * (
+                        Oback + np.tensordot(uv[:,1], uback, axes=0)
+                )
                 # 1. Ajout des nouveaux noeuds : interpolation bilinéaire
-                if uv.shape[0] > nv.shape[0]:
-                    newvertices = []
-                    newpoints = uv[nv.shape[0]:,:]
-                    for i in range(3):
-                        coef1  = (verticesfront[0,i] +
-                                newpoints[:,1]*(verticesfront[-1,i]-verticesfront[0,i]))
-                        coef2  = (verticesback[0,i] +
-                                newpoints[:,1]*(verticesback[-1,i]-verticesback[0,i]))
-                        newvertices.append(newpoints[:,0]*coef1 + (1-newpoints[:,0])*coef2)
-                    newvertices = np.round(np.array(newvertices).T, 2)
-                    self.newvertices = np.concatenate([self.pvertices, newvertices])
+#                if uv.shape[0] > nv.shape[0]:
+#                    newvertices = []
+#                    newpoints = uv[nv.shape[0]:,:]
+#                    for i in range(3):
+#                        # f du point (1,0)
+#                        deltaf = verticesfront[0, i] - verticesfront[-1, i]
+#                        deltav = nvfront[0, 2] - nvfront[-1, 2]
+#                        r = deltaf / deltav
+#                        flr = verticesfront[-1, i] - nvfront[-1, 2] * r
+#                        # f du point (1,1)
+#                        fur = verticesfront[0, i] + (1-nvfront[0, 2]) * r
+#                        # f du point (0,0)
+#                        deltaf = verticesback[0, i] - verticesback[-1, i]
+#                        deltav = nvback[0, 2] - nvback[-1, 2]
+#                        r = deltaf / deltav
+#                        fll = verticesback[-1, i] - nvback[-1, 2] * r
+#                        # f du point (0,1)
+#                        ful = verticesback[0, i] + (1-nvback[0, 2]) * r
+#                        coef1  = (flr + newpoints[:,1]*(fur-flr))
+#                        coef2  = (fll + newpoints[:,1]*(ful-fll))
+#                        newvertices.append(newpoints[:,0]*coef1
+#                                + (1-newpoints[:,0])*coef2)
+#                    newvertices = np.array(newvertices).T
+#                    #newvertices = np.round(np.array(newvertices).T, 2)
+#                    self.pvertices = np.concatenate([self.pvertices, newvertices])
+                assert np.linalg.norm(
+                        nv2[:nv.shape[0]]
+                        -np.vstack([verticesback, verticesfront]), 
+                    axis=1).max()<1E-5
+                newvertices = nv2[nv.shape[0]:]
+                self.pvertices = np.concatenate([self.pvertices, newvertices])
                 # 2. On retrouve le numéro des cellules correspondant aux nouvelles faces
                 tcenters = np.vstack([uv[triangle].mean(axis=0) for triangle in triangles])
-                numcells = [numcellsr, numcellsl]
-                indices_cells = [[], []] # [ right, left ]
-                components_cells = [[], []] # [ right, left ]
+                numcells = [numcellsl, numcellsr]
+                indices_cells = [[], []] # [ left, right ]
+                components_cells = [[], []] # [ left, right ]
                 for i, segment in enumerate(lsegments):
                     segment = np.array(segment)
-                    p1 = uv[segment][:, 0] # y
-                    p2 = uv[segment][:, 1] # z
-                    a = (p2[:, 1] - p1[:,1])/(p2[:, 0] - p1[:, 0])
-                    b = p1[:, 1] - a * p1[:, 0]
+                    pback = uv[segment][:, 0] # y
+                    pfront = uv[segment][:, 1] # z
+                    a = (pfront[:, 1] - pback[:,1])/(pfront[:, 0] - pback[:, 0])
+                    b = pfront[:, 1] - a * pfront[:, 0]
                     for component, center in zip(components, tcenters):
                         points = a * center[0] + b - center[1]
-                        find = False
+                        #fi = np.sort(np.argsort(np.abs(points))[:2])[0]
+                        # On passe sur tous les points des segments
                         for fi, point in enumerate(points):
                             if point > 0:
                                 if fi == 0:
@@ -337,7 +438,8 @@ class PetrelGrid(object):
                                     components_cells[i].append(component)
                                     break
                 # 3. Description des cellules par leurs nouvelles faces
-                for i, cellsface in enumerate([cellsfacer, cellsfacel]): # right, left
+                noeuds_ajout = []
+                for i, cellsface in enumerate([cellsfacel, cellsfacer]): # left, right
                     com = np.array(components_cells[i])
                     ind = np.array(indices_cells[i])
                     ncells = np.unique(ind)
@@ -346,17 +448,21 @@ class PetrelGrid(object):
                         cell = self.new_cells_faces[j]
                         # Faces décrite par leurs noeuds
                         # correspondant aux numéros de cellules j
+                        # faces : numéro de noeud de la triangulation
                         faces_j = np.array(faces)[np.unique(com[ind == j])].tolist()
                         # Boucle sur ces faces. Vérification si elles sont déjà
                         # présentes dans face_nodes
                         modif = False
                         for face in faces_j:
                             newface = []
-                            for fa in face:
-                                if fa < nv.shape[0]:
-                                    newface.append(numbers[fa])
+                            for noeud_tri in face:
+                                # Si noeud_tri inférieur à nv, noeud déjà existant
+                                if noeud_tri < nv.shape[0]:
+                                    newface.append(numbers[noeud_tri])
+                                # Sinon nouveau noeud, et on l'ajoute
                                 else:
-                                    newface.append(fa + maxnode)
+                                    newface.append((maxnode + noeud_tri - nv.shape[0] + 1))
+                                    noeuds_ajout.append(noeud_tri - nv.shape[0] + 1)
                             newface = np.array(newface)
                             face_sort = np.sort(newface).tolist()
                             if face_sort not in np.sort(face_nodes[cellsface]).tolist():
@@ -373,39 +479,37 @@ class PetrelGrid(object):
                         # Mise à jour des nouvelles cellules
                         if modif:
                             self.new_cells_faces[j] = cell
-                maxnode = len(self.new_faces_nodes)
+                    #if 707 in numcells[1]:
+                    #    import ipdb; ipdb.set_trace()
+                if noeuds_ajout:
+                    nmax = np.max(noeuds_ajout)
+                    assert(nmax == len(np.unique(noeuds_ajout)))
+                    assert(nmax + maxnode == len(self.pvertices) - 1)
+                maxnode = len(self.pvertices) - 1
 
 if __name__ == "__main__":
-    rep = ('/home/jpvergnes/Travail/projets/CHARMS/'
-            'petrel/maillage_CPG_albien_mofac/')
-    grdecl = rep + 'MOFAC_albien_eclips.GRDECL'
-    coordfile= rep + 'MOFAC_albien_eclips_COORD.GRDECL'
-    #zcornfile = rep + 'MOFAC_albien_eclips_ZCORN.GRDECL'
-    zcornfile_new = rep + 'MOFAC_albien_eclips_ZCORN_new.GRDECL'
-    #rewrite_file(zcornfile, zcornfile_new)
-    #actnumfile = rep + 'MOFAC_albien_eclips_ACTNUM.GRDECL'
-    actnumfile_new = rep + 'MOFAC_albien_eclips_ACTNUM_new.GRDECL'
-    #rewrite_file(actnumfile, actnumfile_new)
-    #propfaciesfile = rep + 'MOFAC_albien_eclips_PROP_FACIES_NEW.GRDECL'
-    propfaciesfile_new = rep + 'MOFAC_albien_eclips_PROP_FACIES_NEW_new.GRDECL'
-    #rewrite_file(propfaciesfile, propfaciesfile_new)
-    rep = ('/home/jpvergnes/Travail/projets/CHARMS/'
-            'petrel/cas_test_simples_storengy/SimpleGridCases/')
-    grdecl = rep + 'SIMPLE_GRID3.GRDECL'
-    #rep = ('/home/jpvergnes/Travail/projets/CHARMS/'
-    #        'petrel/cas_test_simples_storengy/')
-    #grdecl = rep + 'Modele_CPG_Znonparallele_Actnum_new.GRDECL'
-    #grdecl = rep + 'Modele_CPG_Znonparallele_new.GRDECL'
-    #rewrite_file(grdecl, grdecl_new)
-    pgrid = PetrelGrid(grdecl)#,
-            #coordfile=coordfile,
-            #zcornfile=zcornfile_new,
-            #propfaciesfile=propfaciesfile_new,
-            #actnumfile=actnumfile_new)
+    grdecl = sys.argv[1]
+    grdecl, kwargs = read_file_argument(grdecl)
+    pgrid = PetrelGrid(grdecl, **kwargs)
     pvertices, phexagons = pgrid.process()
-    face_nodes, cells_faces = pgrid.get_faces(phexagons)
-    pvertices, face_nodes, cells_faces = pgrid.get_new_faces(
-            pvertices, cells_faces, face_nodes)
+    permx, permy, permz = pgrid.get_perm()
+    #face_nodes, cells_faces = pgrid.get_faces(phexagons)
+    #pvertices2, face_nodes2, cells_faces2 = pgrid.get_new_faces(
+    #        pvertices, cells_faces, face_nodes)
+    #mesh = RawMesh(
+    #    vertices=pvertices2,
+    #    face_nodes=face_nodes2,
+    #    cell_faces=cells_faces2
+    #)
+    #cell_property = np.array([np.sqrt(2), np.pi]) # 2 cells
+    #tetmesh, original_cell = mesh.as_tets()
+    #MT.to_vtu(
+    #    tetmesh, 'cells_as_tets',
+    #    celldata = {
+    #        'original_cell': original_cell,
+    #        #'magic_numbers': cell_property[original_cell],
+    #    },
+    #)
     mesh = MT.HybridMesh.Mesh()
     vertices = mesh.vertices
     for P in pvertices:
@@ -419,26 +523,3 @@ if __name__ == "__main__":
                 np.array(offsets[1:], copy=False), # no first zero offset for vtk 
                 np.array(cellsnodes, copy=False), mesh.cells_vtk_ids()),
                 'petrel2.vtu') 
-
-# Liste de liste de noeuds numérotés [[1,2,3,...9]]
-# Liste des numéros de face [[1,2,3..4], [1,2,3...]]
-# Tableau de noeuds
-# Décrire les cellules par leurs noeuds (liste de listes)
-# Décrire les faces par leurs noeuds (liste de listes)
-# Décrire les cellules par leurs faces (liste de listes)
-# Classer entre 0 et 1 les z sur chaque pilier
-# Module shapely
-# Outil de triangulation ??
-
-
-# Face de faille : devant derrière, considérer que les points devant/derrière pour les 2 piliers
-# Division des segments/Calcul de toutes les intersections : plein de segments (noeuds1, noeud2)
-# Mailleur triangulaire : rajoute pas de points et triangule moi les faces
-# Calcul composantes connexes -> transformer en polygones -> liste de polygones
-# Attribuer les polygones aux faces devant derrière !! récupérer les z des cellules à côté
-# Object polygone : côtés + barycentre
-
-# Segments + liste de noeuds
-
-
-# exemple BP, point de départ : vertical_column.py
