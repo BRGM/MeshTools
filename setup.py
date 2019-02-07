@@ -108,7 +108,7 @@ setup(
     author_email='anr-charms@brgm.fr',
     description='A python library for managing mesh information and passing to ComPASS.',
     long_description='',
-    packages=['MeshTools'],
+    packages=['MeshTools', 'MeshTools.io'],
     ext_package='MeshTools',
     ext_modules=[ CMakeExtension('_MeshTools') ], #name (first argument) must match the name of the exported pybind11 module
     cmdclass=dict(build_ext=CMakeBuild),
