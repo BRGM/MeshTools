@@ -5,6 +5,7 @@
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
 #include <CGAL/Polygon_mesh_processing/connected_components.h>
+#include <CGAL/Polygon_mesh_processing/triangulate_hole.h>
 
 #include <pybind11/numpy.h>
 
@@ -236,6 +237,7 @@ void add_epick_wrapper(py::module& module)
             ++premove;
         }
     })
+        .def("is_closed", [](const Triangulated_surface& self) { return CGAL::is_closed(self); })
         .def_property_readonly("nb_vertices", &Triangulated_surface::number_of_vertices)
         .def("number_of_vertices", &Triangulated_surface::number_of_vertices)
         .def_property_readonly("nb_faces", &Triangulated_surface::number_of_faces)
@@ -284,6 +286,17 @@ void add_epick_wrapper(py::module& module)
         auto polylines = std::make_unique<Polylines>();
         intersection_curves(S1, S2, std::back_inserter(*polylines));
         return polylines;
+    });
+
+    module.def("fix_border_edges", [](Triangulated_surface& S) {
+        CGAL::Polygon_mesh_processing::stitch_borders(S);
+        for (const auto& he : S.halfedges()) {
+            if (S.is_border(he)) {
+                std::vector<Triangulated_surface::Face_index> patch_faces;
+                std::vector<Triangulated_surface::Vertex_index> patch_vertices;
+                CGAL::Polygon_mesh_processing::triangulate_and_refine_hole(S, he, std::back_inserter(patch_faces), std::back_inserter(patch_vertices));
+            }
+        }
     });
 
 }
