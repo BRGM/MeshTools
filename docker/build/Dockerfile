@@ -1,4 +1,5 @@
-FROM ubuntu:18.10 AS builder
+FROM ubuntu:19.04
+
 RUN  apt-get update \
   && apt-get install --yes --no-install-recommends \
      build-essential \
