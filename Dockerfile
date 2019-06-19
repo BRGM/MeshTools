@@ -10,5 +10,6 @@ WORKDIR /wheels
 COPY --from=builder /source/MeshTools/dist/MeshTools-0.0.1-cp37-cp37m-linux_x86_64.whl .
 RUN pip3 install MeshTools-0.0.1-cp37-cp37m-linux_x86_64.whl
 
-WORKDIR /data
-ENTRYPOINT ["/bin/bash"]
+VOLUME /localfs
+WORKDIR /localfs
+ENTRYPOINT ["/usr/bin/python3"]
