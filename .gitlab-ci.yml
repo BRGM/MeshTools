@@ -50,7 +50,7 @@ integration_test:
   tags:
     - test
   script:
-    - echo "integration test shall not be run as root: cf. issue 11"
+    - echo "integration test shall not be run as root"
     #- docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG MeshTools/vtkwriters.py
 
 #release only on master and if tests passed, maybe another tag should be the number in Git Tag for master! and add in only : Tag: to release only when master is tagged.
