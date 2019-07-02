@@ -801,6 +801,7 @@ void add_mesh_tools(py::module& module)
 		};
 	}, py::keep_alive<0, 1>());
 	module.def("idtype", []() { return py::dtype::of<MT::ElementId>(); });
+    module.add_object("idt", py::dtype::of<MT::ElementId>());
 	module.def("as_id_array", [](py::object object) {
 		std::vector<MT::ElementId>& v = object.cast<std::vector<MT::ElementId>&>();
 		return py::array_t<MT::ElementId, py::array::c_style> {
