@@ -5,33 +5,13 @@
 
 #include <CGAL/Bbox_2.h>
 #include <CGAL/box_intersection_d.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Triangulation_vertex_base_with_info_2.h>
-#include <CGAL/Constrained_triangulation_face_base_2.h>
-#include <CGAL/Constrained_Delaunay_triangulation_2.h>
 
-struct Id_info {
-    typedef int Id_type;
-    static constexpr Id_type default_id = -1;
-    Id_type id;
-    Id_info() :
-        id{ default_id } {}
-};
-
-typedef CGAL::Epick Kernel;
-typedef CGAL::Triangulation_vertex_base_with_info_2<Id_info, Kernel> Vertex_base;
-typedef CGAL::Constrained_triangulation_face_base_2<Kernel> Face_base;
-typedef CGAL::Triangulation_data_structure_2<Vertex_base, Face_base> Tds;
-typedef CGAL::Exact_predicates_tag Itag;
-typedef CGAL::Constrained_Delaunay_triangulation_2<Kernel, Tds, Itag> CDT;
-typedef CDT::Point Point;
-typedef CDT::Segment Segment;
-static_assert(Point::Ambient_dimension::value == 2, "wrong dimension");
+#include "petrel-mesh.h"
+#include "GenericConnectedComponents.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
-#include "GenericConnectedComponents.h"
 
 namespace py = pybind11;
 
@@ -234,26 +214,18 @@ auto build_constrained_delaunay_triangulation(
     py::array_t<double, py::array::c_style> vertices,
     py::array_t<int, py::array::c_style> segments
 ) {
-    CDT cdt;
-    auto nodes = reinterpret_cast<const Point *>(vertices.unchecked<2>().data(0, 0));
-    auto pairs = segments.unchecked<2>();
-    const auto n = pairs.shape(0);
-    for (int k = 0; k < n; ++k) {
-        auto id = pairs(k, 0);
-        auto v0 = cdt.insert(*(nodes + id));
-        v0->info().id = id;
-        id = pairs(k, 1);
-        auto v1 = cdt.insert(*(nodes + id));
-        v1->info().id = id;
-        cdt.insert_constraint(v0, v1);
-    }
-    return cdt;
+    return build_constrained_delaunay_triangulation(
+        reinterpret_cast<const Point *>(vertices.unchecked<2>().data(0, 0)),
+        segments.unchecked<2>().data(0,0), segments.shape(0)
+    );
 }
 
 auto mesh(
     py::array_t<double, py::array::c_style> segment_vertices,
     py::array_t<int, py::array::c_style> segments
 ) {
+    py::print(segment_vertices);
+    py::print(segments);
     auto cdt = build_constrained_delaunay_triangulation(segment_vertices, segments);
     assert(cdt.number_of_faces() > 0);
     const std::size_t nv = cdt.number_of_vertices();
