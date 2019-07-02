@@ -3,7 +3,7 @@ FROM registry.gitlab.inria.fr/charms/meshtools/build-environment:latest AS build
 WORKDIR /source
 COPY ./ /source/MeshTools
 RUN cd ./MeshTools \
- && CGAL_DIR=/build/thirdparties/cgal python3 setup.py bdist_wheel
+ && CGAL_DIR=/usr/include/CGAL python3 setup.py bdist_wheel
 
 FROM registry.gitlab.inria.fr/charms/meshtools/run-environment:latest
 WORKDIR /wheels
