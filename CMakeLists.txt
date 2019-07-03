@@ -95,6 +95,8 @@ if(${MESHTOOLS_USES_CGAL})
     set(MESHTOOLS_CGAL_DIRECTORY ${MESHTOOLS_ROOT_DIRECTORY}/src/cgal)
 endif(${MESHTOOLS_USES_CGAL})
 
+option(MESHTOOLS_COMPILES_EXPERIMENTAL_FEATURES "Compiles experimental features."  ON)
+
 # -- MeshTools source code --
 
 add_subdirectory(src)

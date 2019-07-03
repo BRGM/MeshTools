@@ -20,4 +20,8 @@ if(MESHTOOLS_USES_CGAL)
     add_subdirectory(URG)
 endif(MESHTOOLS_USES_CGAL)
 
+if(MESHTOOLS_COMPILES_EXPERIMENTAL_FEATURES)
+    add_subdirectory(experimental)
+endif(MESHTOOLS_COMPILES_EXPERIMENTAL_FEATURES)
+
 add_subdirectory(core)
