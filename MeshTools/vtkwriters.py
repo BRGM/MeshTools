@@ -236,26 +236,30 @@ def vtu_doc(
     pointdata=None, celldata=None,
     ofmt='binary'
 ):
+    @np.vectorize
+    def compute_celltype(cellsize):
+        return vtk_celltype[{
+                1: 'pt', 2: 'line', 3: 'tri', 4: 'tet', 6: 'wedge', 8: 'hex',
+            }[cellsize]]
     vertices = vtu_vertices(vertices)
     try:
         connectivity = np.array(connectivity, dtype=np.int64, copy=False)
     except ValueError:
         # connectivities may have different length
-        offsets = np.array(len(cell) for cell in connectivity)
+        cellsizes = np.array([len(cell) for cell in connectivity])
+        if celltypes is None:
+            celltypes = compute_celltype(cellsizes)
         celltypes = np.array(celltypes, dtype='u1', copy=False)
+        connectivity = np.hstack(connectivity)
+        connectivity = connectivity.astype(np.int64)
     else:
         assert len(connectivity.shape) == 2
-        nbcells, cellssize = connectivity.shape
-        offsets = np.tile(cellssize, nbcells)
-        if celltypes is None:
-            celltypes = {
-                1: 'pt', 2: 'line', 3: 'tri', 4: 'tet', 6: 'wedge', 8: 'hex',
-            }[cellssize]
-        if isinstance(celltypes, str):
-            celltypes = np.tile(vtk_celltype[celltypes], nbcells)
+        nbcells, cellsize = connectivity.shape
+        cellsizes = np.tile(cellsize, nbcells)
+        celltypes = np.tile(compute_celltype(cellsize), nbcells)
     finally:
-        offsets = offsets.astype(np.int64)
-        offsets = np.cumsum(offsets)
+        cellsizes = cellsizes.astype(np.int64)
+        offsets = np.cumsum(cellsizes)
         nbcells = offsets.shape[0]
     assert offsets.shape == celltypes.shape
     return vtu_doc_from_COC(
@@ -490,6 +494,10 @@ def polyline_as_vtu(vertices):
          )
 
 if __name__ == '__main__':
+    vtu_doc(
+        [(0, 0, 0), (0, 1, 0), (1, 1, 0), (1, 0, 0)],
+        [(0, 1, 2), (0, 1, 2, 3)]
+    )
     import itertools
     delta = 1., 1.5
     shape = 2, 3
