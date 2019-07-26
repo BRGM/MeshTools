@@ -175,6 +175,20 @@ def various_dirty_checks_to_be_cleaned():
     # print(cells[0,0,0])
     # print(cells[0,0,1])
 
+def common_node():
+    cube = petrel_unit_cube()
+    t = lambda x, y, z: np.array((x, y, z), dtype=cube.dtype)
+    cells = np.array([
+        cube,
+        cube + t(0, 0, 1),
+        cube + t(0, 1, -1),
+        cube + t(0, 1, 0),
+    ])
+    cells.shape = (1, 2, 2, 8, 3)
+    cells[0, 1, :, 1::2, 2]-= 0.1 # 1::2 right faces
+    return cells
+
+
 def depth_to_elevation(pts, zref=None, zmap=None, copy=False):
     if zmap is not None:
         assert zref is None
@@ -232,6 +246,7 @@ if __name__=='__main__':
             celldata = {'original_cell': original_cell},
         )
     # --------------------------------------------------------------------------
+    build_and_dump(common_node(), 'common_node')
     build_and_dump(grid_of_heaxaedra((4, 3, 2)), 'sugar_box')
     build_and_dump(four_cells_stairs(), 'stairs')
     build_and_dump(faulted_ramp((8, 2, 1), begin=0.33), 'ramp')
