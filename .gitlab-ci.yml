@@ -13,7 +13,10 @@ stages:
     
 variables:
   CI_REGISTRY_IMAGE: registry.gitlab.inria.fr/charms/meshtools
-
+  # Introduced with docker 19.03
+  # cf. https://gitlab.com/gitlab-org/gitlab-ce/issues/64959
+  # FIXME: this should be replaced by correct certificates
+  DOCKER_TLS_CERTDIR: ""
   #DOCKER_DRIVER: overlay2
 
 # services:
