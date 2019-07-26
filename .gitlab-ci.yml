@@ -1,28 +1,28 @@
 # see https://docs.gitlab.com/ce/ci/yaml/README.html for all available options
 
-# you can delete this line if you're not using Docker
-#image: docker:latest
+image: docker:stable
 
-#image: docker:stable
+services:
+  - docker:stable-dind
+
+variables:
+  CI_REGISTRY_IMAGE: registry.gitlab.inria.fr/charms/meshtools
+  # When using dind, it's wise to use the overlayfs driver for
+  # improved performance.
+  # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
+  # and https://gitlab.inria.fr/charms/ComPASS/issues/72
+  DOCKER_DRIVER: overlay2
+  # Introduced with docker 19.03
+  # cf. https://gitlab.com/gitlab-org/gitlab-ce/issues/64959
+  # FIXME: this should be replaced by correct certificates
+  DOCKER_TLS_CERTDIR: ""
 
 # this sequence will force to have unit tests in docker image. Making unit test before build docker image help remove unit test, but need to split dockerfile multijob build.
 stages:
     - build
     - test
     - release
-    
-variables:
-  CI_REGISTRY_IMAGE: registry.gitlab.inria.fr/charms/meshtools
-  # Introduced with docker 19.03
-  # cf. https://gitlab.com/gitlab-org/gitlab-ce/issues/64959
-  # FIXME: this should be replaced by correct certificates
-  DOCKER_TLS_CERTDIR: ""
-  #DOCKER_DRIVER: overlay2
 
-# services:
-# - docker:dind
-
-# first build epos_gui image to run in docker.
 before_script:
   # - echo "Preparing build..."
   # - docker info
