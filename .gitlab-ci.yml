@@ -19,6 +19,7 @@ variables:
 
 # this sequence will force to have unit tests in docker image. Making unit test before build docker image help remove unit test, but need to split dockerfile multijob build.
 stages:
+    - build_docker_environments
     - build
     - test
     - release
@@ -32,6 +33,20 @@ before_script:
 after_script:
   - echo "After script section"
   - echo "For example you might do some cleanup here"
+
+# here we build specific docker environments
+# (cf. docker/README.md)
+build_docker_environments:
+  stage: build_docker_environments
+  tags:
+    - build
+  only:
+    - /^docker_evt_.*$/
+  script:
+    - docker build --force-rm --cache-from $CI_REGISTRY_IMAGE/build-environment --pull --tag $CI_REGISTRY_IMAGE/build-environment docker/build
+    - docker push $CI_REGISTRY_IMAGE/build-environment
+    - docker build --force-rm --cache-from $CI_REGISTRY_IMAGE/run-environment --pull --tag $CI_REGISTRY_IMAGE/run-environment docker/run
+    - docker push $CI_REGISTRY_IMAGE/run-environment
 
 build:
   stage: build
