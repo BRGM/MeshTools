@@ -10,6 +10,15 @@ def sort_face_nodes(nodes):
         return nodes
     return np.hstack([nodes[0], nodes[1:][::-1]])
 
+# sort face nodes without duplicate
+def sfnwd(nodes):
+    tmp = sort_face_nodes(nodes)
+    nodes = [tmp[0]]
+    for n in tmp[1:]:
+        if n!=nodes[-1]:
+            nodes.append(n)
+    return np.array(nodes)
+
 def is_same_face(nodes1, nodes2):
     return np.all(sort_face_nodes(nodes1)==sort_face_nodes(nodes2))
 
