@@ -1,7 +1,91 @@
-import os
 from itertools import chain
 import numpy as np
 import MeshTools as MT
+
+def _align_face_and_edge(F, e):
+#    print(F, '-<', e, '>-', end=' ')
+    assert all([n in F for n in e])
+    k = F.index(e[0])
+    newF = F[k:] + F[:k]
+#    print('@', newF, '@', end=' ')
+    if newF[1]!=e[1]:
+        assert newF[-1]==e[1]
+        newF = [e[0],] + newF[:0:-1] 
+    assert newF[1]==e[1]
+    return newF
+    
+def _reprocess_pyramid_nodes(faces):
+    assert len(faces)==5
+    fsize = [len(face) for face in faces]
+    assert fsize.count(4)==1 and fsize.count(3)==4
+    base = faces[fsize.index(4)]
+    top = set(faces[fsize.index(3)]) - set(base)
+    assert len(top)==1
+    return base + list(top)
+
+def _reprocess_wedge_nodes(faces):
+    assert len(faces)==5
+    fsize = [len(face) for face in faces]
+    assert fsize.count(4)==3 and fsize.count(3)==2
+    i = fsize.index(3)
+    base = faces[i]
+    top = faces[i+1+fsize[i+1:].index(3)]
+    assert len(set(top)&set(base))==0
+    e0 = base[:2]
+    F = faces[fsize.index(4)]
+    F = _align_face_and_edge(F, e0)
+    e1 = F[2:][::-1]
+    top = _align_face_and_edge(top, e1)
+    return base + list(top)
+
+def _reprocess_hexahedron_nodes(faces):
+    # FIXME: do we need to work with numpy arrays???
+    faces = np.asarray(faces)
+    assert faces.shape==(6, 4)
+    nodes = np.unique(np.hstack(faces))
+    assert nodes.shape==(8,)
+    # find the face opposite to the first one, i.e. faces[0]
+    F0 = faces[0]
+    for fi in range(1, 7):
+        if not np.any(np.isin(F0, faces[fi])):
+            break
+    assert fi!=6
+    Fi = faces[fi]
+    # find the face that share the first edge of faces[0]
+    e0 = faces[0][:2]
+    for fj in range(1, 7):
+        if np.all(np.isin(e0, faces[fj])):
+            break
+    assert fj!=6
+    assert fj!=fi
+    Fj = faces[fj]
+    Fj = _align_face_and_edge(list(Fj), e0)
+#    print(Fj)
+    assert np.all(Fj[:2]==e0)
+    # cycle around Fi such that orientation is ok
+    e1 = Fj[2:][::-1]
+    Fi = _align_face_and_edge(list(Fi), e1)
+#    print(Fi)
+    assert np.all(Fi[:2]==e1)
+    return np.hstack([F0, Fi])
+
+def _reprocess_cell_nodes(faces):
+    nf = len(faces)
+    if nf==6:
+        assert all([len(nodes)==4 for nodes in faces])
+        return _reprocess_hexahedron_nodes(faces)
+    elif nf==5:
+        fsizes = [len(nodes) for nodes in faces]
+        if fsizes.count(4)==1:
+            assert fsizes.count(3)==4
+            return _reprocess_pyramid_nodes(faces)
+        else:
+            assert fsizes.count(4)==3 and fsizes.count(3)==2
+            return _reprocess_wedge_nodes(faces)
+    else:
+        assert nf==4
+        assert all([len(nodes)==3 for nodes in faces])
+        return np.hstack(faces)
 
 class RawMesh:
 
@@ -17,6 +101,7 @@ class RawMesh:
                 value = np.array(value, copy=False)
                 assert value.ndim==2 and value.shape[1]==3
             setattr(self, name, value)
+        self.reprocessed_cellnodes = False
 
     @classmethod
     def convert(cls, other):
@@ -38,22 +123,46 @@ class RawMesh:
     def nb_cells(self):
         return len(self.cell_faces)
 
-    def collect_cell_nodes(self):
+    def collect_cell_nodes(self, reprocess=False):
         assert self._cell_nodes is None
         # WARNING this is ok for convex cells
         face_nodes, cell_faces = self.face_nodes, self.cell_faces
-        return [
-            np.unique(
-                np.hstack([face_nodes[fi] for fi in faces])
-            ) for faces in cell_faces
-        ]
+        if not reprocess:
+            return [
+                np.unique(
+                    np.hstack([face_nodes[fi] for fi in faces])
+                ) for faces in cell_faces
+            ]
+        cell_nodes = []
+        for faces in cell_faces:
+            nf = len(faces)
+            fnodes = [face_nodes[fi] for fi in faces]  
+            if nf==6:
+                assert all([len(nodes)==4 for nodes in fnodes])
+                cell_nodes.append(_reprocess_hexahedron_nodes(fnodes))
+            elif nf==5:
+                fsizes = [len(nodes) for nodes in fnodes]
+                if fsizes.count(4)==1:
+                    assert fsizes.count(3)==4
+                    cell_nodes.append(_reprocess_pyramid_nodes(fnodes))
+                else:
+                    assert fsizes.count(4)==3 and fsizes.count(3)==2
+                    cell_nodes.append(_reprocess_wedge_nodes(fnodes))
+            else:
+                assert nf==4
+                assert all([len(nodes)==3 for nodes in fnodes])
+                cell_nodes.append(np.hstack(fnodes))
+        return cell_nodes
 
-    @property
-    def cell_nodes(self):
-        if self._cell_nodes is not None:
+    def cell_nodes(self, reprocess=False):
+        if (self._cell_nodes is not None and 
+            reprocess==self.reprocessed_cellnodes):
             return self._cell_nodes
         else:
-            return self.collect_cell_nodes()
+            cell_nodes = self.collect_cell_nodes(reprocess)
+            self._cell_nodes = cell_nodes
+            self.reprocessed_cellnodes = reprocess
+            return cell_nodes
 
     def _specific_faces(self, nbnodes):
         face_nodes = self.face_nodes
@@ -74,6 +183,30 @@ class RawMesh:
                 # WARNING: no check on geometry consistency is performed
                 len(faces)==4 and all(triangles[face] for face in faces)
                 for faces in cell_faces
+            ], dtype=np.bool
+        )
+
+    def pyramid_cells(self):
+        cell_faces = self.cell_faces
+        return np.array([
+                # WARNING: no check on geometry consistency is performed
+                (
+                    len(faces)==4 and 
+                    np.sum([len(face)==3 for face in faces])==4 and
+                    np.sum([len(face)==4 for face in faces])==1
+                ) for faces in cell_faces
+            ], dtype=np.bool
+        )
+
+    def wedge_cells(self):
+        cell_faces = self.cell_faces
+        return np.array([
+                # WARNING: no check on geometry consistency is performed
+                (
+                    len(faces)==5 and 
+                    np.sum([len(face)==3 for face in faces])==2 and
+                    np.sum([len(face)==4 for face in faces])==3
+                ) for faces in cell_faces
             ], dtype=np.bool
         )
 
@@ -136,22 +269,27 @@ class RawMesh:
         return new_vertices, cc, fc
     
     def _new_cells(
-        self, kept_cells, kept_faces, cell_centers=None, face_centers=None
+        self, kept_cells, kept_faces, cell_centers=None, face_centers=None,
+        reprocess_cellnodes=False
     ):
         face_nodes = self.face_nodes
         cell_faces = self.cell_faces
-        cell_nodes = self.cell_nodes
+        cell_nodes = self.cell_nodes(reprocess_cellnodes)
         if cell_centers is None:
-            cell_centers = self._centers(self.cell_nodes)
+            cell_centers = self._centers(cell_nodes)
         if face_centers is None:
-            face_centers = self._centers(self.face_nodes)
+            face_centers = self._centers(face_nodes)
         new_vertices, cc, fc = self._new_vertices(
             cell_centers, kept_cells, face_nodes, kept_faces, face_centers
         )
         new_cells = []
         for ci, kept in enumerate(kept_cells):
             if kept:
-                new_cells.append([cell_nodes[ci]])
+                new_cells.append([
+                    _reprocess_cell_nodes(
+                        [face_nodes[fi] for fi in cell_faces[ci]]
+                    )
+                ])
             else:
                 parts = []
                 cci = cc[ci]
@@ -184,12 +322,12 @@ class RawMesh:
         return MT.TetMesh.make(vertices, cells), original
 
     def as_hybrid_mesh(
-        self, cell_centers=None, face_centers=None, convert_voxels=False
+        self, cell_centers=None, face_centers=None
     ):
         vertices, cells, original = self._new_cells(
             self.tetrahedron_cells() | self.hexahedron_cells(),
             self.triangle_faces() | self.quadrangle_faces(),
-            cell_centers=cell_centers, face_centers=face_centers
+            cell_centers=cell_centers, face_centers=face_centers,
         )
         # CHECKME: the follwing creation might benefit from optimized routines
         mesh = MT.HybridMesh.Mesh()
@@ -197,18 +335,11 @@ class RawMesh:
         Point = MT.Point
         for xyz in vertices:
             mesh_vertices.append(Point(xyz))
-        Hexahedron = MT.Hexahedron
-        hex_constructor = Hexahedron
-        if convert_voxels:
-            swap = np.arange(8)
-            for i, j in [(2, 3), (6, 7)]:
-                swap[i], swap[j] = swap[j], swap[i]
-            hex_constructor = lambda nodes: MT.Hexahedron(MT.idarray(nodes)[swap])
         constructor = {
             4: MT.Tetrahedron,
             5: MT.Pyramid,
             6: MT.Wedge,
-            8: hex_constructor,
+            8: MT.Hexahedron,
          }
         cellnodes = mesh.connectivity.cells.nodes
         for cell in cells:
