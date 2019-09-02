@@ -1,0 +1,17 @@
+MeshTools.egg-info/
+MeshTools/__pycache__/
+*.pyd
+MeshTools/MeshTools.cmake
+MeshTools/MeshTools-*.cmake
+*.vtu
+share/
+*.exe
+build/temp.win-amd64-3.6/
+build/temp.linux-x86_64-3.6-cmake/
+*.so
+build/
+dist/
+*.TMP
+*.pyc
+docs/_build
+docs/reference
