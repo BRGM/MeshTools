@@ -325,8 +325,8 @@ class RawMesh:
         self, cell_centers=None, face_centers=None
     ):
         vertices, cells, original = self._new_cells(
-            self.tetrahedron_cells() | self.hexahedron_cells(),
-            self.triangle_faces() | self.quadrangle_faces(),
+            kept_cells = self.tetrahedron_cells() | self.hexahedron_cells(),
+            kept_faces = self.triangle_faces() | self.quadrangle_faces(),
             cell_centers=cell_centers, face_centers=face_centers,
         )
         # CHECKME: the follwing creation might benefit from optimized routines
