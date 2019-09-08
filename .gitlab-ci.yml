@@ -108,7 +108,7 @@ pages:
   script:
     - mkdir -p public/wheels
     - cp -v wheels/*.whl public/wheels
-    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/doc-environment docs/generate_doc.bash $WHEEL_PRERELTAG 
+    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/doc-environment /bin/bash docs/generate_doc.bash $WHEEL_PRERELTAG 
   artifacts:
     paths:
     - public

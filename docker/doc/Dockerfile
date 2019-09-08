@@ -7,11 +7,11 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update \
  && apt-get install --yes \
     python3-sphinx \
+    python3-recommonmark \
     python3-sphinx-rtd-theme \
     texlive \
  && apt-get clean 
 
 VOLUME /localfs
 WORKDIR /localfs
-ENTRYPOINT ["/usr/bin/bash"]
-CMD [""]
+CMD ["/bin/bash"]

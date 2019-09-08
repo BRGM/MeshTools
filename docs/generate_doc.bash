@@ -13,12 +13,15 @@ cat $PIP_CMD_FILE
 source $PIP_CMD_FILE
 rm -rf $TMP_BUILD_DIR
 
-# work in public directory to generate documentation
+# documentation generation
 pushd public
+
 # test: generate a landing page where wheels can be downloaded
 python3 ../docs/generate_landing_page.py wheels
 
 # Steps to generate sphinx doc
-# sphinx-apidoc...
-# sphinx-build....
+mkdir -p sphinx/reference
+sphinx-apidoc ../MeshTools -o docs/reference
+sphinx-build ../docs sphinx
+
 popd

@@ -20,6 +20,9 @@ with open('index.html', 'w') as f:
 </header>
 
 <body>
+
+    Sphinx documentation is <a href="sphinx/sphinx-doc.html">here</a>
+
     Available wheels:
     <ul>
         {}

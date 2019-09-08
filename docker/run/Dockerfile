@@ -8,9 +8,9 @@ RUN apt-get update \
     python3-pip \
     python3-wheel \
     python3-pytest-xdist \
+    libcgal13 \
  && apt-get clean 
 
 VOLUME /localfs
 WORKDIR /localfs
-ENTRYPOINT ["/usr/bin/bash"]
-CMD [""]
+CMD ["/bin/bash"]

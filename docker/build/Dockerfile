@@ -16,4 +16,4 @@ ENV CGAL_DIR /usr/include/CGAL
 
 VOLUME /localfs
 WORKDIR /localfs
-CMD ["/usr/bin/bash"]
+CMD ["/bin/bash"]
