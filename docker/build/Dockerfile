@@ -12,4 +12,8 @@ RUN  apt-get update \
      python3-numpy \
   && apt-get clean
 
-WORKDIR /build
+ENV CGAL_DIR /usr/include/CGAL
+
+VOLUME /localfs
+WORKDIR /localfs
+CMD ["/usr/bin/bash"]

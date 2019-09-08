@@ -1,0 +1,17 @@
+FROM registry.gitlab.inria.fr/charms/meshtools/run-environment:latest
+
+# The following two lines are necessary for the configuration of tzdata
+ENV TZ=Europe/Paris
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get update \
+ && apt-get install --yes \
+    python3-sphinx \
+    python3-sphinx-rtd-theme \
+    texlive \
+ && apt-get clean 
+
+VOLUME /localfs
+WORKDIR /localfs
+ENTRYPOINT ["/usr/bin/bash"]
+CMD [""]

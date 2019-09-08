@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+from pathlib import Path
 import platform
 import subprocess
 
@@ -11,12 +12,16 @@ from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 from multiprocessing import cpu_count
 
+sys.path.insert(0, Path('maintenance').as_posix())
+from PackageInfo import PackageInfo
+
+package = PackageInfo('MeshTools')
+
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         # depends option does not seem to work
         Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
-
 
 class CMakeBuild(build_ext):
     
@@ -102,11 +107,11 @@ class CMakeBuild(build_ext):
         subprocess.check_call(build_cmd, cwd=build_dir)
 
 setup(
-    name='MeshTools',
-    version='0.0.1',
+    name=package.name,
+    version=package.version,
     author='brgm',
     author_email='anr-charms@brgm.fr',
-    description='A python library for managing mesh information and passing to ComPASS.',
+    description='A python library for managing mesh information and passing it to ComPASS.',
     long_description='',
     packages=['MeshTools', 'MeshTools.io', 'MeshTools.utils'],
     ext_package='MeshTools',

@@ -6,7 +6,11 @@ RUN apt-get update \
     python3-numpy \
     python3-setuptools \
     python3-pip \
+    python3-wheel \
+    python3-pytest-xdist \
  && apt-get clean 
 
-WORKDIR /build
-
+VOLUME /localfs
+WORKDIR /localfs
+ENTRYPOINT ["/usr/bin/bash"]
+CMD [""]

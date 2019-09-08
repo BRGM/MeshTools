@@ -19,3 +19,10 @@ and in the `run` directory:
 docker build -t registry.gitlab.inria.fr/charms/meshtools/run-environment .
 docker push registry.gitlab.inria.fr/charms/meshtools/run-environment 
 ```
+
+and in the `doc` directory:
+
+```shell
+docker build -t registry.gitlab.inria.fr/charms/meshtools/doc-environment .
+docker push registry.gitlab.inria.fr/charms/meshtools/doc-environment 
+```

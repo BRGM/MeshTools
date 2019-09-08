@@ -1,3 +1,7 @@
+# __variables__ with double-quoted values will be available in setup.py:
+__version__ = "0.0.2"
+
+
 import numpy as np
 from MeshTools._MeshTools import *
 import MeshTools.GridTools as GT

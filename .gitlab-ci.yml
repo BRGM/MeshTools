@@ -6,22 +6,27 @@ services:
   - docker:stable-dind
 
 variables:
-  CI_REGISTRY_IMAGE: registry.gitlab.inria.fr/charms/meshtools
   # When using dind, it's wise to use the overlayfs driver for
   # improved performance.
   # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
   # and https://gitlab.inria.fr/charms/ComPASS/issues/72
   DOCKER_DRIVER: overlay2
-  # Introduced with docker 19.03
-  # cf. https://gitlab.com/gitlab-org/gitlab-ce/issues/64959
-  # FIXME: this should be replaced by correct certificates
-  DOCKER_TLS_CERTDIR: ""
+  # Specify to Docker where to create the certificates, Docker will
+  # create them automatically on boot, and will create
+  # `/certs/client` that will be shared between the service and job
+  # container, thanks to volume mount from config.toml
+  # cf. https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
+  DOCKER_TLS_CERTDIR: "/certs"
+  # Project specifc variables
+  CI_REGISTRY_IMAGE: registry.gitlab.inria.fr/charms/meshtools
+  WHEEL_PRERELTAG: ".dev_$CI_COMMIT_REF_SLUG"
 
 # this sequence will force to have unit tests in docker image. Making unit test before build docker image help remove unit test, but need to split dockerfile multijob build.
 stages:
     - build_docker_environments
     - build
     - test
+    - documentation
     - release
 
 before_script:
@@ -47,21 +52,21 @@ build_docker_environments:
     - docker push $CI_REGISTRY_IMAGE/build-environment
     - docker build --force-rm --cache-from $CI_REGISTRY_IMAGE/run-environment --pull --tag $CI_REGISTRY_IMAGE/run-environment docker/run
     - docker push $CI_REGISTRY_IMAGE/run-environment
+    - docker build --force-rm --cache-from $CI_REGISTRY_IMAGE/doc-environment --pull --tag $CI_REGISTRY_IMAGE/doc-environment docker/doc
+    - docker push $CI_REGISTRY_IMAGE/doc-environment
 
 build:
   stage: build
   tags:
     - build
   script:
-#    - docker pull $CI_REGISTRY_IMAGE:latest || true
-    - docker build --force-rm --cache-from $CI_REGISTRY_IMAGE:latest --pull --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-    
-    #TODO
-    #how to use docker cache ? split dockerfile to have a build image.fixed.
-    #how to prevent from rebuild all code when only test change.
-    # add gitlab runner docker in slave 2 to run dind
-    # clean mechanism for docker images ?
+    - mkdir -p wheels
+    - echo $PWD:/localfs
+    - echo $WHEEL_PRERELTAG
+    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/build-environment python3 setup.py egg_info --tag-build=$WHEEL_PRERELTAG bdist_wheel -d wheels
+  artifacts:
+    paths:
+    - wheels
 
 integration_test:
   stage: test
@@ -95,3 +100,16 @@ tag-release:
   only:
     - tags
   when: on_success
+
+pages:
+  stage: documentation
+  tags:
+    - build
+  script:
+    - mkdir -p public/wheels
+    - cp -v wheels/*.whl public/wheels
+    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/doc-environment docs/generate_doc.bash $WHEEL_PRERELTAG 
+  artifacts:
+    paths:
+    - public
+
