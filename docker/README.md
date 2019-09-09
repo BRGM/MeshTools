@@ -1,4 +1,4 @@
-The two repositories have docker files that are used to generate build and run environments for MeshTools.
+Subdirectories have docker files that are used to generate specific environments for MeshTools.
 
 Log into the compass docker regisry:
 
@@ -6,23 +6,5 @@ Log into the compass docker regisry:
 docker login registry.gitlab.inria.fr
 ```
 
-then in the `build` directory:
+then in this directory you can run the `generate_environments.bash`script.
 
-```shell
-docker build -t registry.gitlab.inria.fr/charms/meshtools/build-environment .
-docker push registry.gitlab.inria.fr/charms/meshtools/build-environment 
-```
-
-and in the `run` directory:
-
-```shell
-docker build -t registry.gitlab.inria.fr/charms/meshtools/run-environment .
-docker push registry.gitlab.inria.fr/charms/meshtools/run-environment 
-```
-
-and in the `doc` directory:
-
-```shell
-docker build -t registry.gitlab.inria.fr/charms/meshtools/doc-environment .
-docker push registry.gitlab.inria.fr/charms/meshtools/doc-environment 
-```

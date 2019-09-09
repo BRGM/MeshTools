@@ -68,8 +68,9 @@ class CMakeBuild(build_ext):
         CGAL_DIR = find_cgal_dir()
         if CGAL_DIR:
             cmake_args+= ['-DCGAL_DIR=' + os.path.abspath(CGAL_DIR)]
-            cmake_args+= ['-DBUILD_TESTING=0'] # not to build the CGAL test suite
-            cmake_args+= ['-DCGAL_Boost_USE_STATIC_LIBS=1'] # to include the boost libraries and avoid linking problems
+            cmake_args+= ['-DCGAL_HEADER_ONLY=ON'] # to use CGAL header only mode
+            cmake_args+= ['-DBUILD_TESTING=OFF'] # not to build the CGAL test suite
+            cmake_args+= ['-DCGAL_Boost_USE_STATIC_LIBS=ON'] # to include the boost libraries and avoid linking problems
         else:
             print('WARNING: CGAL extensions will not be compiled!', file=sys.stderr)
             print('The CGAL_DIR or MESHTOOLS_WITH_CGAL_DIR environment variables can be used to point to the desired CGAL installation directory.', file=sys.stderr)
