@@ -76,15 +76,12 @@ integration_test:
     - echo "integration test shall not be run as root"
     #- docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG MeshTools/vtkwriters.py
 
-#release only on master and if tests passed, maybe another tag should be the number in Git Tag for master! and add in only : Tag: to release only when master is tagged.
 release:
   stage: release
   tags:
     - build
   script:
-    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG $CI_REGISTRY_IMAGE:latest
-    - docker push $CI_REGISTRY_IMAGE:latest
+    - echo "Nothing specific..."
   only:
     - master
   when: on_success
@@ -94,9 +91,7 @@ tag-release:
   tags:
     - build
   script:
-    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    - echo "Nothing specific..."
   only:
     - tags
   when: on_success
