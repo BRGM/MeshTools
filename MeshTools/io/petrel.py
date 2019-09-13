@@ -1,8 +1,8 @@
 # Dans un terminal :
 # python petrel.py chemin_du_fichier_petrel
 import numpy as np
-import pylab as plt
 import sys, re, os
+
 import MeshTools as MT
 import MeshTools.vtkwriters as vtkw
 import MeshTools.PetrelMesh as PM

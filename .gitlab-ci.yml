@@ -73,8 +73,8 @@ integration_test:
   tags:
     - test
   script:
-    - echo "integration test shall not be run as root"
-    #- docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG MeshTools/vtkwriters.py
+    # FIXME: integration test shall not be run as root
+    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/run-environment  /bin/bash sdk/run_tests.bash $WHEEL_PRERELTAG
 
 release:
   stage: release
