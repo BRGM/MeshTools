@@ -324,6 +324,9 @@ class RawMesh:
     def as_hybrid_mesh(
         self, cell_centers=None, face_centers=None
     ):
+        """
+            Will return a MeshTools.HybridMesh object.
+        """
         vertices, cells, original = self._new_cells(
             kept_cells = self.tetrahedron_cells() | self.hexahedron_cells(),
             kept_faces = self.triangle_faces() | self.quadrangle_faces(),

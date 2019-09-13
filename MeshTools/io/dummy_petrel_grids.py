@@ -1,7 +1,7 @@
 from itertools import product
 import numpy as np
 
-from petrel import PetrelGrid
+from MeshTools.io.petrel import PetrelGrid
 
 def petrel_unit_cube(dtype=np.double):
     """Build a unit cube defined by its 8 nodes
@@ -207,48 +207,3 @@ def minimum_distance(pts):
         np.linalg.norm(pts[j]-pts[i])
         for i, j in product(range(n), range(n)) if i<j
     ])
-
-if __name__=='__main__':
-    various_dirty_checks_to_be_cleaned()
-    import MeshTools as MT
-    from MeshTools.RawMesh import RawMesh
-    def build_and_dump(hexaedra, name):
-        print('-'*50)
-        print('processing', name)
-        pil = pilars(hexaedra)
-        grid = PetrelGrid.build_from_arrays(
-            pil[..., :3], pil[..., 3:], hexaedra[..., 2]
-        )
-        print('pilars shape', pil.shape)
-        print('zcorn shape', hexaedra[..., 2].shape)
-        hexa = grid.process()
-        print('minimum distance', minimum_distance(grid.pvertices))
-        MT.to_vtu(
-            MT.HexMesh.make(depth_to_elevation(grid.pvertices), hexa), 
-            name,
-        )
-        grid.set_faces(hexa)
-        mesh = RawMesh(
-            vertices=grid.pvertices,
-            face_nodes=grid.new_faces_nodes,
-            cell_faces=grid.cells_faces
-        )
-        print(
-            'mesh with', mesh.nb_cells, 'cells', mesh.nb_faces, 'faces',
-            mesh.nb_vertices, 'vertices'
-        )
-        print('number of tetrahedra:', np.sum(mesh.tetrahedron_cells()))
-        print('number of hexahedra:', np.sum(mesh.hexahedron_cells()))
-        # raw_mesh, original_cell = mesh.as_tets()
-        raw_mesh, original_cell = mesh.as_hybrid_mesh(convert_voxels=True)
-        MT.to_vtu(
-            raw_mesh, name + '_splitted',
-            celldata = {'original_cell': original_cell},
-        )
-    # --------------------------------------------------------------------------
-    build_and_dump(common_node(), 'common_node')
-    build_and_dump(grid_of_heaxaedra((4, 3, 2)), 'sugar_box')
-    build_and_dump(four_cells_stairs(), 'stairs')
-    build_and_dump(faulted_ramp((8, 2, 1), begin=0.33), 'ramp')
-    build_and_dump(faulted_ramp((8, 4, 3), begin=0.33), 'thicker_ramp')
-    

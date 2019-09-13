@@ -224,8 +224,8 @@ auto mesh(
     py::array_t<double, py::array::c_style> segment_vertices,
     py::array_t<int, py::array::c_style> segments
 ) {
-    py::print(segment_vertices);
-    py::print(segments);
+    // py::print(segment_vertices);
+    // py::print(segments);
     auto cdt = build_constrained_delaunay_triangulation(segment_vertices, segments);
     assert(cdt.number_of_faces() > 0);
     const std::size_t nv = cdt.number_of_vertices();
