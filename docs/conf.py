@@ -17,7 +17,7 @@ author = 'various contributors'
 # The full version, including alpha/beta/rc tags
 release = '2017'
 
-master_doc = 'sphinx-doc'
+master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
 

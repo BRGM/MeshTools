@@ -1,16 +1,16 @@
 #!/bin/bash
 
-/bin/bash sdk/install_wheel.bash $1
+/bin/bash sdk/install_wheel.bash $1 wheels
 
-# documentation generation
-pushd public
-
-# test: generate a landing page where wheels can be downloaded
-python3 ../docs/generate_landing_page.py wheels
-
-# Steps to generate sphinx doc
-mkdir -p sphinx/reference
-sphinx-apidoc ../MeshTools -o sphinx/reference
-sphinx-build ../docs sphinx
-
+pushd docs
+ln -s ../wheels
+for f in README INSTALL LICENSE
+do
+    cp -vf ../$f.md .
+done
+python3 generate_wheels_page.py wheels
+sphinx-apidoc ../MeshTools -o reference
+sphinx-build . html
+cp -rf html/* ../public/
+cp -rfv wheels ../public/
 popd
