@@ -91,10 +91,13 @@ tag-release:
   tags:
     - build
   script:
-    - echo "Nothing specific..."
+    - echo "The tag is " $CI_COMMIT_TAG
   only:
     - tags
   when: on_success
+  artifacts:
+    paths:
+    - wheels
 
 pages:
   stage: documentation
