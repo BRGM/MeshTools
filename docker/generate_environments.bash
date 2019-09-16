@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REF_SLUG=${1:+":"}${1:""}
+REF_SLUG=${1:+":"}${1:-""}
 
 # order is important as doc depends on run 
 for evt in build run doc

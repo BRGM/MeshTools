@@ -48,25 +48,22 @@ build_docker_environments:
   only:
     - /^docker_evt_.*$/
   script:
-    - docker build --force-rm --cache-from $CI_REGISTRY_IMAGE/build-environment --pull --tag $CI_REGISTRY_IMAGE/build-environment docker/build
-    - docker push $CI_REGISTRY_IMAGE/build-environment
-    - docker build --force-rm --cache-from $CI_REGISTRY_IMAGE/run-environment --pull --tag $CI_REGISTRY_IMAGE/run-environment docker/run
-    - docker push $CI_REGISTRY_IMAGE/run-environment
-    - docker build --force-rm --cache-from $CI_REGISTRY_IMAGE/doc-environment --pull --tag $CI_REGISTRY_IMAGE/doc-environment docker/doc
-    - docker push $CI_REGISTRY_IMAGE/doc-environment
+    - pushd docker
+    - /bin/bash -e generate_environments.bash
+    - popd
 
 build:
   stage: build
   tags:
     - build
   script:
-    - mkdir -p wheels
+    - mkdir -p wheel
     - echo $PWD:/localfs
     - echo $WHEEL_PRERELTAG
-    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/build-environment python3 setup.py egg_info --tag-build=$WHEEL_PRERELTAG bdist_wheel -d wheels
+    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/build-environment python3 setup.py egg_info --tag-build=$WHEEL_PRERELTAG bdist_wheel -d wheel
   artifacts:
     paths:
-    - wheels
+    - wheel
 
 integration_test:
   stage: test
@@ -102,8 +99,8 @@ pages:
     - build
   script:
     - mkdir -p public/wheels
-    - cp -v wheels/*.whl public/wheels
-    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/doc-environment /bin/bash docs/generate_doc.bash $WHEEL_PRERELTAG 
+    - cp -v wheel/*.whl public/wheels
+    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/doc-environment /bin/bash -e docs/generate_doc.bash $WHEEL_PRERELTAG 
   artifacts:
     paths:
     - public

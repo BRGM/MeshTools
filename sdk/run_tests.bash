@@ -5,6 +5,6 @@ if [ "$#" -ne 1 ]; then
     exit -1
 fi
 
-/bin/bash sdk/install_wheel.bash $1 wheels
+/bin/bash sdk/install_wheel.bash $1 wheel
 
 pytest tests/ci

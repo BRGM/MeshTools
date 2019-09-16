@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 WHEEL_TAG=$1
 WHEEL_DIRECTORY=${2:-"public/wheels"}
