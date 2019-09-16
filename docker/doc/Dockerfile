@@ -8,6 +8,7 @@ RUN apt-get update \
  && apt-get install --yes \
     python3-sphinx \
     python3-sphinx-rtd-theme \
+    pandoc \
     texlive \
  && apt-get clean \
  && pip3 install --upgrade recommonmark
