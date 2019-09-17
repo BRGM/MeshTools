@@ -26,8 +26,8 @@ stages:
     - build_docker_environments
     - build
     - test
-    - documentation
     - release
+    - documentation
 
 before_script:
   # - echo "Preparing build..."
@@ -78,9 +78,16 @@ release:
   tags:
     - build
   script:
-    - echo "Nothing specific..."
-  only:
-    - master
+    # This is a trick to store the wheel corresponding to the master branch
+    # it is because we cannot use the job token to download artifacts
+    # using the gitlab API with gitlab CE (it is a premium feature)
+    # hence the trick to store the wheel in a docker image (:-()
+    # this is transitory before the package is released on pypi
+    - docker build -t registry.gitlab.inria.fr/charms/meshtools/master-wheel --build-arg MESHTOOLS_WHEEL_PATH=`ls wheel/*.whl` -f docker/store_wheel/Dockerfile .
+    - docker push registry.gitlab.inria.fr/charms/meshtools/master-wheel
+  only: 
+    refs: 
+        - master
   when: on_success
 
 tag-release:
