@@ -49,7 +49,7 @@ build_docker_environments:
     - /^docker_evt_.*$/
   script:
     - pushd docker
-    - /bin/bash -e generate_environments.bash
+    - /bin/sh -e generate_environments.bash
     - popd
 
 build:
