@@ -29,12 +29,12 @@ ostream &operator<<(ostream &os, const array<T, n> &a)
 namespace MeshTools
 {
 
-    // template <typename FT, ::std::size_t dim>
-    // ::std::ostream &operator<<(::std::ostream &os, const Point<FT, dim> &P)
-    // {
-    //     os << "Point" << static_cast<const ::std::array<FT, dim> &>(P);
-    //     return os;
-    // }
+    template <typename FT, ::std::size_t dim>
+    ::std::ostream &operator<<(::std::ostream &os, const Point<FT, dim> &P)
+    {
+        os << "Point" << static_cast<const ::std::array<FT, dim> &>(P);
+        return os;
+    }
     
     template <::std::size_t n>
     ::std::ostream &operator<<(::std::ostream &os, const MT::Element_by_nodes<n> &element)
