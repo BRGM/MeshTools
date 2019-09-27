@@ -20,6 +20,7 @@ vtk_celltype = ({
     'voxel': 11,
     'hexahedron': 12, 'hex': 12,
     'wedge': 13,
+    'polyhedron': 42,
 })
 
 
@@ -267,6 +268,53 @@ def vtu_doc(
         pointdata, celldata,
         ofmt
     )
+
+def polyhedra_vtu_doc(
+    vertices, cells_faces,
+    pointdata=None, celldata=None,
+    ofmt='binary'
+):
+    doc = vtk_doc('UnstructuredGrid')
+    grid = create_childnode(doc.documentElement, 'UnstructuredGrid')
+    nb_cells = len(cells_faces)
+    piece = create_childnode(
+        grid, 'Piece', {
+            'NumberOfPoints': '%d' % vertices.shape[0],
+            'NumberOfCells': '%d' % nb_cells,
+        },
+    )
+    points = create_childnode(piece, 'Points')
+    add_dataarray(points, _ravel_information_block(vertices),
+                  'Points', nbcomp=3, ofmt=ofmt)
+    cells = create_childnode(piece, 'Cells')
+    cells_nodes = [
+        np.unique(np.hstack(faces)) for faces in cells_faces
+    ]
+    int64array = lambda a: np.asarray(a, dtype=np.int64)
+    def as_coc(l):
+        return (
+            int64array(np.cumsum([len(a) for a in l])), # offsets
+            int64array(np.hstack(l)), # stacked elemnts
+        )
+    offsets, connectivity = as_coc(cells_nodes)
+    celltypes = np.asarray(np.tile(vtk_celltype['polyhedron'], nb_cells), dtype=np.int8)
+    all_faces = []
+    for faces in cells_faces:
+        tmp = [len(faces)]
+        for face in faces:
+            tmp.append(len(face))
+            tmp.extend(face)
+        all_faces.append(tmp)
+    faceoffsets, faces = as_coc(all_faces)
+    add_dataarray(cells, connectivity, 'connectivity', ofmt=ofmt)
+    add_dataarray(cells, offsets,'offsets', ofmt=ofmt)
+    add_dataarray(cells, celltypes, 'types', ofmt=ofmt)
+    add_dataarray(cells, faces, 'faces', ofmt=ofmt)
+    add_dataarray(cells, faceoffsets, 'faceoffsets', ofmt=ofmt)
+    add_piece_data(piece, 'PointData', pointdata, ofmt=ofmt)
+    add_piece_data(piece, 'CellData', celldata, ofmt=ofmt)
+    return doc
+
 
 def pvtu_doc(
     vertices_type, pieces,
