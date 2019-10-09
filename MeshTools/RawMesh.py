@@ -94,6 +94,8 @@ class RawMesh:
         self._cell_nodes = None
         assert 'cell_faces' in kwds
         assert 'face_nodes' in kwds
+        assert all([len(faces)>3 for faces in kwds['cell_faces']]), 'degenerated cell'
+        assert all([len(nodes)>2 for nodes in kwds['face_nodes']]), 'degenerated face'
         for name, value in kwds.items():
             if name=='cell_nodes':
                 name = '_cell_nodes'
