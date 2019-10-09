@@ -94,11 +94,11 @@ namespace Chunks
             target->total_footprint = mfp;
         }
         value_type& operator[](const std::size_t i) {
-            assert(i < nb_elements);
+            assert(i < number_of_subchuncks());
             return *(std::advance(begin(), i));
         }
         const_value_type& at(const std::size_t i) const {
-            assert(i < nb_elements);
+            assert(i < number_of_subchuncks());
             return *(std::advance(begin(), i));
         }
         auto number_of_subchuncks() const {
