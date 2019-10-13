@@ -38,6 +38,7 @@ def test_raw_mesh():
         face_nodes=face_nodes,
         cell_faces=cell_faces
     )
+    MT.to_vtu(mesh, 'cells_as_polyhedra')
     cell_property = np.array([np.sqrt(2), np.pi]) # 2 cells
     tetmesh, original_cell = mesh.as_tets()
     MT.to_vtu(

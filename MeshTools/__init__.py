@@ -6,21 +6,31 @@ import numpy as np
 from MeshTools._MeshTools import *
 import MeshTools.GridTools as GT
 import MeshTools.vtkwriters as vtkw
+from MeshTools.RawMesh import RawMesh
 
 idarray = lambda a: np.asarray(a, dtype=idtype())
 
 def to_vtu(mesh, filename, **kwargs):
-    offsets, cellsnodes = mesh.cells_nodes_as_COC()
-    vtkw.write_vtu(
-        vtkw.vtu_doc_from_COC(
-                mesh.vertices_array(), 
-                np.array(offsets[1:], copy=False), # vtk: no first zero offset 
-                np.array(cellsnodes, copy=False),
-                mesh.cells_vtk_ids(),
-                **kwargs
-        ),
-        filename,
-    ) 
+    if type(mesh) is RawMesh:
+        cell_faces = mesh.cell_faces
+        face_nodes = mesh.face_nodes
+        vtu = vtkw.polyhedra_vtu_doc(
+            mesh.vertices, [
+                [face_nodes[face] for face in faces]
+                for faces in cell_faces 
+            ],
+            **kwargs
+        )
+    else:
+        offsets, cellsnodes = mesh.cells_nodes_as_COC()
+        vtu = vtkw.vtu_doc_from_COC(
+            mesh.vertices_array(), 
+            np.array(offsets[1:], copy=False), # vtk: no first zero offset 
+            np.array(cellsnodes, copy=False),
+            mesh.cells_vtk_ids(),
+            **kwargs
+        )
+    vtkw.write_vtu(vtu, filename)
 
 def grid3D(**kwargs):
     if 'steps' in kwargs:
