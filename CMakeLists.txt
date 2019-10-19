@@ -37,10 +37,10 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     PATH "Default installation prefix, will be through MESHTOOLS_PYTHON_PACKAGE_DIRECTORY variable only if no installation prefix is given." FORCE)
   else()
     # if no specific instalation prefix was provided
-    # and if the GMLIB_PYTHON_PACKAGE_DIRECTORY variable is not set
+    # and if the MESHTOOLS_PYTHON_PACKAGE_DIRECTORY variable is not set
     # default to the source directory
     # cmake export will be put there and python modules
-    # will be put in ${CMAKE_INSTALL_PREFIX}/${GMLIB_PYTHON_PACKAGE_NAME}
+    # will be put in ${CMAKE_INSTALL_PREFIX}/${MESHTOOLS_PYTHON_PACKAGE_NAME}
     set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR} CACHE
     PATH "Default installation prefix, will be through MESHTOOLS_PYTHON_PACKAGE_DIRECTORY variable only if no installation prefix is given." FORCE)
   endif()
@@ -112,4 +112,3 @@ install(EXPORT MeshTools DESTINATION share/cmake/)
 # to use them you will need to reference the build tree 
 # cf. https://gitlab.kitware.com/cmake/community/wikis/doc/tutorials/Exporting-and-Importing-Targets
 export(EXPORT MeshTools FILE share/cmake/meshtools-exports.cmake)
-
