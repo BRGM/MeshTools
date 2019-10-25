@@ -376,7 +376,7 @@ def block_as_vti_doc(
     else:
         raise Exception('unknown location' + str(location))
     return vti_doc(
-        shape, delta, origin, pointdata, celldata,
+        shape, delta=delta, origin=origin, pointdata=pointdata, celldata=celldata,
         ofmt=ofmt,
     )
 
