@@ -244,6 +244,10 @@ def vtu_doc(
             }[cellsize]]
     vertices = vtu_vertices(vertices)
     try:
+        celltypes = int(celltypes)
+    except TypeError:
+        celltypes = None
+    try:
         connectivity = np.array(connectivity, dtype=np.int64, copy=False)
     except ValueError:
         # connectivities may have different length
@@ -257,7 +261,11 @@ def vtu_doc(
         assert len(connectivity.shape) == 2
         nbcells, cellsize = connectivity.shape
         cellsizes = np.tile(cellsize, nbcells)
-        celltypes = np.tile(compute_celltype(cellsize), nbcells)
+        if celltypes is None:
+            celltypes = np.tile(compute_celltype(cellsize), nbcells)
+        elif type(celltypes) is int:
+            assert len(np.unique(cellsizes))==1
+            celltypes = np.tile(celltypes, nbcells)
     finally:
         cellsizes = cellsizes.astype(np.int64)
         offsets = np.cumsum(cellsizes)
