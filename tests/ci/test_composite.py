@@ -1,14 +1,6 @@
-# from collections import namedtuple
 import numpy as np
 
 from MeshTools import vtkwriters as vtkw
-
-# from MeshTools.io.petrel import PetrelGrid
-# from MeshTools.RawMesh import RawMesh
-# import MeshTools.io.dummy_petrel_grids as dummy_grids
-
-# import pytest
-
 
 # fmt: off
 vertices = np.array(
@@ -38,10 +30,12 @@ tet_faces = [
 ]
 # fmt: on
 
+
 def test_write_composite():
     vtkw.write_vtu(vtkw.polyhedra_vtu_doc(vertices, [diamond_faces]), "diamond")
     vtkw.write_vtu(vtkw.polyhedra_vtu_doc(vertices, [tet_faces]), "tet")
     vtkw.write_vtm(vtkw.vtm_doc(["diamond.vtu", "tet.vtu"]), "composite")
 
-if __name__=='__main__':
+
+if __name__ == "__main__":
     test_write_composite()
