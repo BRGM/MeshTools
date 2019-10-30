@@ -7,6 +7,7 @@
 import sys, os
 from functools import partial
 import base64
+from pathlib import Path
 import xml.dom
 import numpy as np
 
@@ -34,11 +35,13 @@ def create_childnode(parent, name, attributes=None):
     return elt
 
 
-def vtk_doc(filetype):
+def vtk_doc(filetype, version=None):
     impl = xml.dom.getDOMImplementation()
     doc = impl.createDocument(None, 'VTKFile', None)
     doc.documentElement.setAttribute('type', filetype)
     doc.documentElement.setAttribute('header_type', 'UInt64')
+    if version is not None:
+        doc.documentElement.setAttribute('version', version)
     return doc
 
 def add_xdataarray_node(parent, nodename, dataname, dtype, ofmt, nbcomp):
@@ -428,6 +431,31 @@ def pvd_doc(snapshots):
     return doc
 
 
+def vtm_doc(elements):
+    """Creates a composite dataset from paraview files. 
+    :param elements: is a sequence of filenames or tuple with (element name, filename)
+    if not given basenames are used to name blocks"""
+    tmp = []
+    for element in elements:
+        if type(element) is tuple:
+            name, filepath = element
+            filepath = Path(filepath)
+        else:
+            filepath = Path(element)
+            name = filepath.with_suffix('').name
+        assert filepath.exists(), f'{filepath} does not exist'
+        tmp.append((name, filepath))
+    elements = tmp
+    doc = vtk_doc('vtkMultiBlockDataSet', version='1.0') # version is mandatory here
+    block = create_childnode(doc.documentElement, 'vtkMultiBlockDataSet')
+    for k, (name, filepath) in enumerate(elements):
+        create_childnode(
+            block, 'DataSet',
+            {'index': f'{k}', 'name': name, 'file': str(filepath)},
+        )
+    return doc
+
+
 def write_xml(doc, out, indent=' ' * 2, newl='\n', extension=''):
     def output(filelike):
         doc.writexml(filelike, addindent=indent, newl=newl)
@@ -447,6 +475,7 @@ write_vti = partial(write_xml, extension='.vti')
 write_vtu = partial(write_xml, extension='.vtu')
 write_pvtu = partial(write_xml, extension='.pvtu')
 write_pvd = partial(write_xml, extension='.pvd')
+write_vtm = partial(write_xml, extension='.vtm')
 
 
 def _write_data_snapshots(
