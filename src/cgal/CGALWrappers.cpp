@@ -3,6 +3,7 @@
 #include "EpickWrapper-module.h"
 #include "DTMWrapper-module.h"
 #include "C3t3Wrapper-module.h"
+#include "Polygon2Wrapper-module.h"
 
 PYBIND11_MODULE(CGALWrappers, module)
 {
@@ -11,7 +12,8 @@ PYBIND11_MODULE(CGALWrappers, module)
 
     add_epick_wrapper(module);
     add_dtm_wrapper(module);
-    add_c3t3_wrapper(module);
+	add_c3t3_wrapper(module);
+	add_polygon_wrapper(module);
 
     module.def("cgal_version", []() {
         auto version = py::str{ "{:d}.{:d}.{:d}" };
