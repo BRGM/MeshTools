@@ -7,6 +7,8 @@ RUN apt-get update \
     python3-setuptools \
     python3-pip \
     python3-wheel \
+    libgmp10 \
+    libmpfr6 \
  && apt-get clean 
 
 # AttributeError: 'Function' object has no attribute 'get_marker'
