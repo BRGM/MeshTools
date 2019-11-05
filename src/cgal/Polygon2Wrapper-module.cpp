@@ -7,26 +7,17 @@
 
 #include "Epick_types.h"
 #include <CGAL/Polygon_2.h>
-
-// #include "mesh-pyutils.h"
-// #include "mesh_implicit_domains.h"
-// #include "implicit_functions.h"
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
 
 typedef CGAL::Polygon_2<Kernel> CGAL_Polygon;
 typedef CGAL_Polygon::Point_2 Point2;
+typedef CGAL::Exact_predicates_tag Itag;
+typedef CGAL::Constrained_Delaunay_triangulation_2<Kernel, CGAL::Default, Itag> CDT;
 
 static_assert(sizeof(Point2)==2*sizeof(double), "unconsistent sizes in memory");
+static_assert(std::is_same<CDT::Point, Point2>::value, "unconsistent point types");
 
 namespace py = pybind11;
-
-// template <typename Buffer>
-// auto to_array(const Buffer& buffer)
-// {
-//     typedef typename Buffer::value_type Scalar;
-//     return py::array_t<Scalar, py::array::c_style> {
-//         buffer.shape, buffer.stride, buffer.data
-//     };
-// }
 
 struct Polygon {
     CGAL_Polygon boundary;
@@ -67,6 +58,51 @@ struct Polygon {
         );
     }
 };
+
+template <typename Iterator, typename Id=int>
+auto rebind(Iterator p, Iterator pend)
+{
+	std::map<CDT::Vertex_handle, Id> hmap;
+	for (Id k = 0; p != pend; ++p, ++k) {
+		hmap[p] = k;
+	}
+	return hmap;
+}
+
+auto mesh_polygon(const Polygon& polygon)
+{
+	CDT cdt;
+	auto insert_polygon_boundary_constraint = [&cdt](const CGAL_Polygon& P) {
+		cdt.insert_constraint(P.vertices_begin(), P.vertices_end(), true);
+	};
+	insert_polygon_boundary_constraint(polygon.boundary);
+	for (auto&& hole : polygon.holes) {
+		insert_polygon_boundary_constraint(hole);
+	}
+	assert(cdt.is_valid());
+	auto vmap = rebind(cdt.finite_vertices_begin(), cdt.finite_vertices_end());
+	assert(vmap.size() == cdt.number_of_vertices());
+	assert(vmap.size() == std::distance(cdt.finite_vertices_begin(), cdt.finite_vertices_end()));
+	auto vertices = py::array_t<double, py::array::c_style>{ { (std::size_t) cdt.number_of_vertices(), (std::size_t) 2 } };
+	auto p = reinterpret_cast<Point2 *>(vertices.request().ptr);
+	std::transform(
+		cdt.finite_vertices_begin(), cdt.finite_vertices_end(), p,
+		[](const auto& v) { return v.point();  }
+	);
+	auto triangles = py::array_t<int, py::array::c_style>{ { (std::size_t) cdt.number_of_faces(), (std::size_t) 3 } };
+	auto pv = reinterpret_cast<int *>(triangles.request().ptr);
+	for (auto face = cdt.finite_faces_begin(); face != cdt.finite_faces_end(); ++face) {
+		for (int k = 0; k != 3; ++k, ++pv) {
+			(*pv) = vmap[face->vertex(k)];
+		}
+	}
+	auto in_polygon = py::array_t<bool, py::array::c_style>{ (std::size_t) cdt.number_of_faces() };
+	auto p_in = reinterpret_cast<bool *>(in_polygon.request().ptr);
+	for (auto face = cdt.finite_faces_begin(); face != cdt.finite_faces_end(); ++face, ++p_in) {
+		(*p_in) = polygon.has_point_inside(CGAL::centroid(cdt.triangle(face)));
+	}
+	return py::make_tuple(vertices, triangles, in_polygon);
+}
 
 struct Point2Buffer {
 	Point2 * data;
@@ -199,6 +235,7 @@ void add_polygon_wrapper(py::module& module)
 	.def("has_all_points_inside", [](const Polygon& self, py_double_array& points) {
 		return polygon_has_all_points_inside(self, points);
 	})
+	.def("triangulate", &mesh_polygon)
 	;
 
 }

@@ -32,20 +32,37 @@ hole2 = np.array(
 # fmt: on
 
 
-# def draw(polygon, seeds):
-#     import matplotlib.pyplot as plt
+def draw(polygon, seeds):
 
-#     def draw_polygon(polygon, color):
-#         points = np.array([P.coordinates for P in polygon.points])
-#         points = np.vstack([points, points[0]])  # close polygon
-#         plt.plot(points[:, 0], points[:, 1], c=color)
+    try:
+        import matplotlib.pyplot as plt
+    except ModuleNotFoundError:
+        return
 
-#     plt.clf()
-#     draw_polygon(polygon.boundary, "blue")
-#     for hole in polygon.holes:
-#         draw_polygon(hole, "red")
-#     plt.plot(seeds[:, 0], seeds[:, 1], "ok")
-#     plt.savefig("test_polygon.png")
+    def draw_polygon(polygon, color):
+        points = np.array([P.coordinates for P in polygon.points])
+        points = np.vstack([points, points[0]])  # close polygon
+        plt.plot(points[:, 0], points[:, 1], c=color)
+
+    plt.clf()
+    draw_polygon(polygon.boundary, "blue")
+    for hole in polygon.holes:
+        draw_polygon(hole, "red")
+    plt.plot(seeds[:, 0], seeds[:, 1], "ok")
+    plt.savefig("test_polygon.png")
+
+
+def draw_triangles(vertices, triangles, inside):
+
+    try:
+        import matplotlib.pyplot as plt
+    except ModuleNotFoundError:
+        return
+
+    plt.clf()
+    plt.tripcolor(vertices[:, 0], vertices[:, 1], triangles, inside, shading="flat")
+    plt.triplot(vertices[:, 0], vertices[:, 1], triangles)
+    plt.savefig("test_polygon_triangles.png")
 
 
 def test_polygon():
@@ -57,7 +74,9 @@ def test_polygon():
     points = np.random.random((nseeds, 2))
     keep = polygon.has_points_inside(points)
     print(f"{np.sum(keep)} points kept out of {nseeds}")
-    # draw(polygon, points[keep])
+    vertices, triangles, inside = polygon.triangulate()
+    draw(polygon, points[keep])
+    draw_triangles(vertices, triangles, inside)
 
 
 if __name__ == "__main__":
