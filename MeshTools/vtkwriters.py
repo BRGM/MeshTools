@@ -434,25 +434,37 @@ def pvd_doc(snapshots):
 def vtm_doc(elements):
     """Creates a composite dataset from paraview files. 
     :param elements: is a sequence of filenames or tuple with (element name, filename)
-    if not given basenames are used to name blocks"""
-    tmp = []
-    for element in elements:
-        if type(element) is tuple:
-            name, filepath = element
-            filepath = Path(filepath)
-        else:
-            filepath = Path(element)
-            name = filepath.with_suffix('').name
-        assert filepath.exists(), f'{filepath} does not exist'
-        tmp.append((name, filepath))
-    elements = tmp
+    if not given basenames are used to name blocks,
+    it can als be a dictionnary to define subblocks"""
+    def refactor(elements):
+        result = []
+        for element in elements:
+            if type(element) is tuple:
+                name, filepath = element
+                filepath = Path(filepath)
+            else:
+                filepath = Path(element)
+                name = filepath.with_suffix('').name
+            assert filepath.exists(), f'{filepath} does not exist'
+            result.append((name, filepath))
+        return result
+    def add_datasets(block, elements):
+        for k, (name, filepath) in enumerate(elements):
+            create_childnode(
+                block, 'DataSet',
+                {'index': f'{k}', 'name': name, 'file': str(filepath)},
+            )
     doc = vtk_doc('vtkMultiBlockDataSet', version='1.0') # version is mandatory here
-    block = create_childnode(doc.documentElement, 'vtkMultiBlockDataSet')
-    for k, (name, filepath) in enumerate(elements):
-        create_childnode(
-            block, 'DataSet',
-            {'index': f'{k}', 'name': name, 'file': str(filepath)},
-        )
+    multiblock = create_childnode(doc.documentElement, 'vtkMultiBlockDataSet')
+    try:
+        for k, (block_name, subblocks) in enumerate(elements.items()):
+            block = create_childnode(
+                multiblock, 'Block',
+                {'index': f'{k}', 'name': block_name},
+            )
+            add_datasets(block, refactor(subblocks))
+    except AttributeError:
+        add_datasets(multiblock, refactor(elements))
     return doc
 
 
