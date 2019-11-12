@@ -107,6 +107,14 @@ class CMakeBuild(build_ext):
         build_cmd = ['cmake', '--build', '.'] + build_args
         subprocess.check_call(build_cmd, cwd=build_dir)
 
+# FIXME: use generic library version
+package_data = {}
+if os.name=='nt':
+    package_data[package.name] = []
+    for libname in ['gmp10', 'mpr-4']:
+        if Path(f"{package.name}/lib{libname}.dll").exists:
+            package_data[package.name].append(f"lib{libname}.dll")
+
 setup(
     name=package.name,
     version=package.version,
@@ -117,6 +125,7 @@ setup(
     packages=['MeshTools', 'MeshTools.io', 'MeshTools.utils'],
     ext_package='MeshTools',
     ext_modules=[ CMakeExtension('_MeshTools') ], #name (first argument) must match the name of the exported pybind11 module
+    package_data=package_data,
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
 )
