@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.4.0)
+cmake_minimum_required(VERSION 3.12.0)
+cmake_policy(VERSION 3.12.0)
 
 project(MeshTools CXX)
 
