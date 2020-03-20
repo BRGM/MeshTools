@@ -212,7 +212,7 @@ def vtu_doc_from_COC(
     pointdata=None, celldata=None,
     ofmt='binary'
 ):
-    offsets = offsets.astype(np.int64)
+    offsets = offsets.astype(np.int32)
     celltypes = celltypes.astype(np.int8)
     doc = vtk_doc('UnstructuredGrid')
     grid = create_childnode(doc.documentElement, 'UnstructuredGrid')
