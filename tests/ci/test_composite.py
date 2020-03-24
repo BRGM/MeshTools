@@ -35,10 +35,12 @@ def test_write_composite():
     vtkw.write_vtu(vtkw.polyhedra_vtu_doc(vertices, [diamond_faces]), "diamond")
     vtkw.write_vtu(vtkw.polyhedra_vtu_doc(vertices, [tet_faces]), "tet")
     vtkw.write_vtm(vtkw.vtm_doc(["diamond.vtu", "tet.vtu"]), "composite")
-    vtkw.write_vtm(vtkw.vtm_doc({
-        'copy1': ["diamond.vtu", "tet.vtu"],
-        'copy2': ["diamond.vtu", "tet.vtu"],
-    }), "composite_with_duplicates")
+    vtkw.write_vtm(
+        vtkw.vtm_doc(
+            {"copy1": ["diamond.vtu", "tet.vtu"], "copy2": ["diamond.vtu", "tet.vtu"],}
+        ),
+        "composite_with_duplicates",
+    )
 
 
 if __name__ == "__main__":

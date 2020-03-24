@@ -29,7 +29,7 @@ MeshTools can optionally be built with CGAL extensions.
 
 :exclamation: Beware that from commit 3571466f342bd8e048fbc37368225b1ae7d14b6b
 you will need a version of CGAL that integrates the following
-[patch](https://github.com/CGAL/cgal/pull/3377). 
+[patch](https://github.com/CGAL/cgal/pull/3377).
 
 On Linux you may just install the ad-hoc package using your favourite package
 manager.
@@ -113,6 +113,5 @@ using git, it is the top level directory where you can find a `CMakeLists.txt`
 file.
 
 Once the library is built you will have all of the python modules composing
-MeshTools in the MeshTools directory. These can be imported into python 
+MeshTools in the MeshTools directory. These can be imported into python
 scripts and used as in the example scripts in the `tests/python` directory.
-

@@ -1,4 +1,4 @@
-FROM ubuntu:19.04 
+FROM ubuntu:19.04
 
 RUN apt-get update \
  && apt-get install --yes --no-install-recommends \
@@ -9,7 +9,7 @@ RUN apt-get update \
     python3-wheel \
     libgmp10 \
     libmpfr6 \
- && apt-get clean 
+ && apt-get clean
 
 # AttributeError: 'Function' object has no attribute 'get_marker'
 # with earlier versions

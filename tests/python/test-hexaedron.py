@@ -6,18 +6,18 @@ Point = MeshTools.Point
 Hexa = MeshTools.Hexahedron
 
 pts = [
-	Point(( 0., 0., 0.)),
-	Point(( 1., 0., 0.)),
-	Point(( 1., 1., 0.)),
-	Point(( 0., 1., 0.)),
-	Point(( 0., 0., 1.)),
-	Point(( 1., 0., 1.)),
-	Point(( 1., 1., 1.)),
-	Point(( 0., 1., 1.)),
+    Point((0.0, 0.0, 0.0)),
+    Point((1.0, 0.0, 0.0)),
+    Point((1.0, 1.0, 0.0)),
+    Point((0.0, 1.0, 0.0)),
+    Point((0.0, 0.0, 1.0)),
+    Point((1.0, 0.0, 1.0)),
+    Point((1.0, 1.0, 1.0)),
+    Point((0.0, 1.0, 1.0)),
 ]
 
 hexas = [
-	Hexa((0, 1, 2, 3, 4, 5, 6, 7)),
+    Hexa((0, 1, 2, 3, 4, 5, 6, 7)),
 ]
 
 mesh = MeshTools.HybridMesh.Mesh()
@@ -34,10 +34,10 @@ mesh.connectivity.update_from_cellnodes()
 offsets, cellsnodes = mesh.cells_nodes_as_COC()
 vtkw.write_vtu(
     vtkw.vtu_doc_from_COC(
-            mesh.vertices_array(), 
-            np.array(offsets[1:], copy=False), # no first zero offset for vtk 
-            np.array(cellsnodes, copy=False),
-            mesh.cells_vtk_ids()
+        mesh.vertices_array(),
+        np.array(offsets[1:], copy=False),  # no first zero offset for vtk
+        np.array(cellsnodes, copy=False),
+        mesh.cells_vtk_ids(),
     ),
-    'hexa.vtu'
-) 
+    "hexa.vtu",
+)

@@ -7,29 +7,20 @@ Tet = MT.Tetrahedron
 Wedge = MT.Wedge
 
 pts = [
-	Point(( 0., 0., -1.)),
-	Point(( 1., -1., 0.)),
-	Point(( 1., 1., 0.)),
-	Point(( -1., 0., 0.)),
-	Point(( 0., 0., 1.))
+    Point((0.0, 0.0, -1.0)),
+    Point((1.0, -1.0, 0.0)),
+    Point((1.0, 1.0, 0.0)),
+    Point((-1.0, 0.0, 0.0)),
+    Point((0.0, 0.0, 1.0)),
 ]
 
-pts2 = [
-	Point(( 2., 0., -1.)),
-	Point(( 2., -1., 0.)),
-	Point(( 2., 1., 0.))
-]
+pts2 = [Point((2.0, 0.0, -1.0)), Point((2.0, -1.0, 0.0)), Point((2.0, 1.0, 0.0))]
 
-tets = [
-	Tet((1, 2, 3, 0)),
-	Tet((1, 2, 3, 4))
-]
+tets = [Tet((1, 2, 3, 0)), Tet((1, 2, 3, 4))]
 
-wedges = [
-    Wedge((0, 1, 2, 5, 6, 7))
-]
+wedges = [Wedge((0, 1, 2, 5, 6, 7))]
 
-mesh =MT.TetMesh.Mesh()
+mesh = MT.TetMesh.Mesh()
 vertices = mesh.vertices
 for P in pts:
     vertices.append(P)

@@ -5,4 +5,3 @@
 namespace py = pybind11;
 
 void add_epick_wrapper(py::module&);
-

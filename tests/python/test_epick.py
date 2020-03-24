@@ -9,7 +9,7 @@ def test_epick():
     try:
         pl = CGAL.Polyline(a)
     except CGAL.EpickException:
-        pass    
+        pass
     a.shape = (-1, 3)
     pl = CGAL.Polyline(a)
     plv = pl.view()
@@ -19,8 +19,9 @@ def test_epick():
         print(P)
     plb = np.array(pl)
     print(plb)
-    plb*= 2
+    plb *= 2
     print(plb)
 
-if __name__=='__main__':
+
+if __name__ == "__main__":
     test_epick()

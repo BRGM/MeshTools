@@ -1,105 +1,104 @@
 #pragma once
 
 template <typename Constraint_map>
-auto collect_consrained_edges_as_curves(const Mesh& mesh, const Constraint_map& constraints)
-{
+auto collect_consrained_edges_as_curves(const Mesh& mesh,
+                                        const Constraint_map& constraints) {
+  typedef typename Mesh::Vertex_index Vertex_index;
+  typedef typename Mesh::Edge_index Edge_index;
 
-    typedef typename Mesh::Vertex_index Vertex_index;
-    typedef typename Mesh::Edge_index Edge_index;
+  typedef std::list<Vertex_index> Curve;
+  std::vector<Curve> curves;
 
-    typedef std::list<Vertex_index> Curve;
-    std::vector<Curve> curves;
-
-    auto collect_constrained_edges = [](const Mesh& mesh, const auto& constraints) {
-        std::vector<Edge_index> result;
-        for (auto&& edge : mesh.edges()) {
-            if (constraints[edge]) {
-                //std::cout << "ce:" << static_cast<Point>(mesh.point(mesh.vertex(edge, 0)))
-                //    << "->" << static_cast<Point>(mesh.point(mesh.vertex(edge, 1))) << std::endl;
-                result.emplace_back(edge);
-            }
-        }
-        return result;
-        //std::vector<std::pair<Vertex_index, Vertex_index>> result;
-        //for (auto&& edge : mesh.edges()) {
-        //    if (constraints[edge]) {
-        //        result.emplace_back(
-        //            mesh.vertex(edge, 0),
-        //            mesh.vertex(edge, 1)
-        //        );
-        //    }
-        //}
-        //return result;
-    };
-
-    auto constrained_edges = collect_constrained_edges(mesh, constraints);
-
-    auto edge_in_curve = std::map<Edge_index, bool>{};
-    for (auto&& edge : constrained_edges) {
-        edge_in_curve.emplace(edge, false);
+  auto collect_constrained_edges = [](const Mesh& mesh,
+                                      const auto& constraints) {
+    std::vector<Edge_index> result;
+    for (auto&& edge : mesh.edges()) {
+      if (constraints[edge]) {
+        // std::cout << "ce:" << static_cast<Point>(mesh.point(mesh.vertex(edge,
+        // 0)))
+        //    << "->" << static_cast<Point>(mesh.point(mesh.vertex(edge, 1))) <<
+        //    std::endl;
+        result.emplace_back(edge);
+      }
     }
-    auto find_free_edge = [&edge_in_curve]() {
-        typedef boost::optional<Edge_index> Result;
-        auto free_edge = std::find_if(
-            begin(edge_in_curve), end(edge_in_curve),
-            // find the first pair <key, value> with value = false, i.e. edge is not in curve
-            [](auto&& pair) { return !pair.second; }
-        );
-        if (free_edge == end(edge_in_curve)) return Result{};
-        return Result{ free_edge->first };
-    };
-    auto collect_vertices_until_corner = [&mesh, &edge_in_curve](Vertex_index start, auto out) {
-        auto find_single_exit = [&edge_in_curve, &mesh](Vertex_index v) {
-            std::cerr << "looking for exit at " << mesh.point(v) << " "
-                << std::count_if(begin(edge_in_curve), end(edge_in_curve), [](auto p) { return p.second; })
+    return result;
+    // std::vector<std::pair<Vertex_index, Vertex_index>> result;
+    // for (auto&& edge : mesh.edges()) {
+    //    if (constraints[edge]) {
+    //        result.emplace_back(
+    //            mesh.vertex(edge, 0),
+    //            mesh.vertex(edge, 1)
+    //        );
+    //    }
+    //}
+    // return result;
+  };
+
+  auto constrained_edges = collect_constrained_edges(mesh, constraints);
+
+  auto edge_in_curve = std::map<Edge_index, bool>{};
+  for (auto&& edge : constrained_edges) {
+    edge_in_curve.emplace(edge, false);
+  }
+  auto find_free_edge = [&edge_in_curve]() {
+    typedef boost::optional<Edge_index> Result;
+    auto free_edge = std::find_if(begin(edge_in_curve), end(edge_in_curve),
+                                  // find the first pair <key, value> with value
+                                  // = false, i.e. edge is not in curve
+                                  [](auto&& pair) { return !pair.second; });
+    if (free_edge == end(edge_in_curve)) return Result{};
+    return Result{free_edge->first};
+  };
+  auto collect_vertices_until_corner = [&mesh, &edge_in_curve](
+                                           Vertex_index start, auto out) {
+    auto find_single_exit = [&edge_in_curve, &mesh](Vertex_index v) {
+      std::cerr << "looking for exit at " << mesh.point(v) << " "
+                << std::count_if(begin(edge_in_curve), end(edge_in_curve),
+                                 [](auto p) { return p.second; })
                 << " edges in curves" << std::endl;
-            typedef std::pair<Edge_index, Vertex_index> Exit;
-            typedef boost::optional<Exit> Result;
-            auto result = Result{};
-            for (auto&& h : CGAL::halfedges_around_source(v, mesh)) {
-                auto p = edge_in_curve.find(mesh.edge(h));
-                if (p != end(edge_in_curve)) {
-                    if (!p->second) { // edge is not on curve
-                        if (result) { // already one exit found
-                            return Result{};
-                        }
-                        else {
-                            result = Exit{ p->first, mesh.target(h) };
-                        }
-                    }
-                }
+      typedef std::pair<Edge_index, Vertex_index> Exit;
+      typedef boost::optional<Exit> Result;
+      auto result = Result{};
+      for (auto&& h : CGAL::halfedges_around_source(v, mesh)) {
+        auto p = edge_in_curve.find(mesh.edge(h));
+        if (p != end(edge_in_curve)) {
+          if (!p->second) {  // edge is not on curve
+            if (result) {    // already one exit found
+              return Result{};
+            } else {
+              result = Exit{p->first, mesh.target(h)};
             }
-            return result;
-        };
-        auto next_vertex_found = find_single_exit(start);
-        while (next_vertex_found) {
-            edge_in_curve[next_vertex_found->first] = true;
-            start = next_vertex_found->second;
-            *out = start;
-            ++out;
-            next_vertex_found = find_single_exit(start);
+          }
         }
+      }
+      return result;
     };
-    for (
-        auto edge_left = find_free_edge();
-        edge_left;
-        edge_left = find_free_edge()
-        ) {
-        auto starting_edge = *edge_left;
-        //std::cerr << "#### new curve" << std::endl;
-        curves.emplace_back();
-        auto& curve = curves.back();
-        edge_in_curve[starting_edge] = true;
-        curve.emplace_back(mesh.vertex(starting_edge, 0));
-        curve.emplace_back(mesh.vertex(starting_edge, 1));
-        //std::cerr << "#### new curve backward" << std::endl;
-        collect_vertices_until_corner(curve.back(), std::back_inserter(curve));
-        //std::cerr << "#### new curve forward" << std::endl;
-        collect_vertices_until_corner(curve.front(), std::front_inserter(curve));
+    auto next_vertex_found = find_single_exit(start);
+    while (next_vertex_found) {
+      edge_in_curve[next_vertex_found->first] = true;
+      start = next_vertex_found->second;
+      *out = start;
+      ++out;
+      next_vertex_found = find_single_exit(start);
     }
-    assert(std::all_of(begin(edge_in_curve), end(edge_in_curve), [](auto&& p) {return p.second; }));
-    return curves;
-
+  };
+  for (auto edge_left = find_free_edge(); edge_left;
+       edge_left = find_free_edge()) {
+    auto starting_edge = *edge_left;
+    // std::cerr << "#### new curve" << std::endl;
+    curves.emplace_back();
+    auto& curve = curves.back();
+    edge_in_curve[starting_edge] = true;
+    curve.emplace_back(mesh.vertex(starting_edge, 0));
+    curve.emplace_back(mesh.vertex(starting_edge, 1));
+    // std::cerr << "#### new curve backward" << std::endl;
+    collect_vertices_until_corner(curve.back(), std::back_inserter(curve));
+    // std::cerr << "#### new curve forward" << std::endl;
+    collect_vertices_until_corner(curve.front(), std::front_inserter(curve));
+  }
+  assert(std::all_of(begin(edge_in_curve), end(edge_in_curve),
+                     [](auto&& p) { return p.second; }));
+  return curves;
 }
 
 /** check a curve does goes round a face
@@ -120,8 +119,8 @@ bool does_curve_round_a_face(const Curve& curve)
                 h = mesh.next(h);
                 for (auto v = mesh.target(h); v != vend; h = mesh.next(h)) {
                     if (mesh.point(v).constraint
-                        && mesh.point(v).constraint.has_curve(&curve)) return true;
-                    v = mesh.target(h);
+                        && mesh.point(v).constraint.has_curve(&curve)) return
+true; v = mesh.target(h);
                 }
             }
             return false;
@@ -138,7 +137,8 @@ bool does_curve_round_a_face(const Curve& curve)
             auto qi = qv->info[i];
             assert(pi.is_on_surface() && qi.is_on_surface());
             assert(pi.surface == qi.surface);
-            if (!check_adjacent_faces(*pi.surface, pi.index, qi.index)) return false;
+            if (!check_adjacent_faces(*pi.surface, pi.index, qi.index)) return
+false;
         }
         pv = qv;
     }
@@ -147,12 +147,14 @@ bool does_curve_round_a_face(const Curve& curve)
 
 
 template <typename Vertex_lists>
-auto associate_curves(Mesh& mesh1, const Vertex_lists& curves1, Mesh& mesh2, const Vertex_lists& curves2)
+auto associate_curves(Mesh& mesh1, const Vertex_lists& curves1, Mesh& mesh2,
+const Vertex_lists& curves2)
 {
 
     typedef typename Vertex_lists::value_type Vertex_list;
     typedef typename Vertex_list::value_type Vertex_index;
-    static_assert(std::is_same<typename Mesh::Vertex_index, Vertex_index>::value, "Inconsistent types");
+    static_assert(std::is_same<typename Mesh::Vertex_index,
+Vertex_index>::value, "Inconsistent types");
 
     assert(curves1.size() == curves2.size());
     std::vector<const Vertex_list *> already_associated;
@@ -163,13 +165,11 @@ auto associate_curves(Mesh& mesh1, const Vertex_lists& curves1, Mesh& mesh2, con
         bool found_corresponding_curve = false;
         for (auto& curve2 : curves2) {
             auto p = &curve2;
-            if (std::find(begin(already_associated), end(already_associated), p) == end(already_associated)) {
-                if (curve1.size() == curve2.size()) {
-                    bool all_points_associated = true;
-                    for (auto&& v1 : curve1) {
-                        if (v1tov2.count(v1) == 0) {
-                            auto P1 = CGAL::Epick::Point_3{ mesh1.point(v1) };
-                            auto pv2 = std::find_if(begin(curve2), end(curve2),
+            if (std::find(begin(already_associated), end(already_associated), p)
+== end(already_associated)) { if (curve1.size() == curve2.size()) { bool
+all_points_associated = true; for (auto&& v1 : curve1) { if (v1tov2.count(v1) ==
+0) { auto P1 = CGAL::Epick::Point_3{ mesh1.point(v1) }; auto pv2 =
+std::find_if(begin(curve2), end(curve2),
                                 [&mesh2, &P1](const auto& v2) {
                                 return P1 == mesh2.point(v2);
                             });
@@ -200,10 +200,9 @@ auto associate_curves(Mesh& mesh1, const Vertex_lists& curves1, Mesh& mesh2, con
     }
 
 #ifndef NDEBUG
-    auto check_all_points_have_correspondances = [](const auto& curves, const auto& vmap) {
-        for (auto&& curve : curves) {
-            for (auto&& v : curve) {
-                if (vmap.count(v) == 0) return false;
+    auto check_all_points_have_correspondances = [](const auto& curves, const
+auto& vmap) { for (auto&& curve : curves) { for (auto&& v : curve) { if
+(vmap.count(v) == 0) return false;
             }
         }
         return true;
@@ -263,7 +262,8 @@ auto associate_curves(Mesh& mesh1, const Vertex_lists& curves1, Mesh& mesh2, con
                 if (auto constraint = mesh1.point(neighbor).constraint) {
                     if (auto on_curve = constraint.on_curve()) {
                         if (on_curve->curve != pcurve) {
-                            assert(std::find(begin(neighboring_constraints), end(neighboring_constraints), constraint) == end(neighboring_constraints));
+                            assert(std::find(begin(neighboring_constraints),
+end(neighboring_constraints), constraint) == end(neighboring_constraints));
                             neighboring_constraints.emplace_back(constraint);
                         }
                     }
@@ -274,10 +274,10 @@ auto associate_curves(Mesh& mesh1, const Vertex_lists& curves1, Mesh& mesh2, con
                 }
             }
             if (neighboring_constraints.size() > 1) {
-                for (auto pc = begin(neighboring_constraints); pc != end(neighboring_constraints); ++pc) {
-                    for (auto qc = next(pc); qc != end(neighboring_constraints); ++qc) {
-                        if (auto weak_link = neighbors_on_same_curve(*pc, *qc)) {
-                            assert(weak_link->is_weak());
+                for (auto pc = begin(neighboring_constraints); pc !=
+end(neighboring_constraints); ++pc) { for (auto qc = next(pc); qc !=
+end(neighboring_constraints); ++qc) { if (auto weak_link =
+neighbors_on_same_curve(*pc, *qc)) { assert(weak_link->is_weak());
                             assert(node.constraint());
                             assert(node.constraint().on_curve());
                         }
@@ -289,4 +289,3 @@ auto associate_curves(Mesh& mesh1, const Vertex_lists& curves1, Mesh& mesh2, con
 
 }
 /**/
-

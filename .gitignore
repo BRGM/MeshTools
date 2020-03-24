@@ -4,6 +4,7 @@ MeshTools/__pycache__/
 MeshTools/MeshTools.cmake
 MeshTools/MeshTools-*.cmake
 *.vtu
+*.vtm
 share/
 *.exe
 build/temp.win-amd64-3.6/
@@ -13,5 +14,6 @@ build/
 dist/
 *.TMP
 *.pyc
+_skbuild/
 docs/_build
 docs/reference

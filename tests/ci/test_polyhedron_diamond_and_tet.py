@@ -40,5 +40,6 @@ faces = [
 ]
 # fmt: on
 
+
 def test_write_dummy_polyhedra():
     vtkw.write_vtu(vtkw.polyhedra_vtu_doc(vertices, faces), "diamond_and_test")

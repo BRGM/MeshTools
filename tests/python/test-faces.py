@@ -6,27 +6,18 @@ Tet = MeshTools.Tetrahedron
 Wedge = MeshTools.Wedge
 
 pts = [
-	Point(( 0., 0., -1.)),
-	Point(( 1., -1., 0.)),
-	Point(( 1., 1., 0.)),
-	Point(( -1., 0., 0.)),
-	Point(( 0., 0., 1.))
+    Point((0.0, 0.0, -1.0)),
+    Point((1.0, -1.0, 0.0)),
+    Point((1.0, 1.0, 0.0)),
+    Point((-1.0, 0.0, 0.0)),
+    Point((0.0, 0.0, 1.0)),
 ]
 
-pts2 = [
-	Point(( 2., 0., -1.)),
-	Point(( 2., -1., 0.)),
-	Point(( 2., 1., 0.))
-]
+pts2 = [Point((2.0, 0.0, -1.0)), Point((2.0, -1.0, 0.0)), Point((2.0, 1.0, 0.0))]
 
-tets = [
-	Tet((1, 2, 3, 0)),
-	Tet((1, 2, 3, 4))
-]
+tets = [Tet((1, 2, 3, 0)), Tet((1, 2, 3, 4))]
 
-wedges = [
-    Wedge((0, 1, 2, 5, 6, 7))
-]
+wedges = [Wedge((0, 1, 2, 5, 6, 7))]
 
 mesh = MeshTools.HybridMesh.Mesh()
 vertices = mesh.vertices
@@ -40,7 +31,7 @@ for elt in tets + wedges:
 mesh.connectivity.update_from_cellnodes()
 
 faces = mesh.connectivity.faces
-print(faces)    
+print(faces)
 face_cells = faces.cells
 a = np.asarray(face_cells)
 for pair in a:
@@ -48,5 +39,3 @@ for pair in a:
 
 a = faces.cells_as_array()
 print(a)
-
-

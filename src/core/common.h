@@ -1,9 +1,7 @@
 #pragma once
 
-namespace MeshTools
-{
+namespace MeshTools {
 
-	typedef uint64_t ElementId;
+typedef uint64_t ElementId;
 
-} // namespace MeshTools
-
+}  // namespace MeshTools

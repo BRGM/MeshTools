@@ -7,7 +7,7 @@ Created on Wed Oct  3 16:54:33 2018
 
 import MeshTools.PetrelMesh as PM
 
-filename = 'precc_triangulation.txt'
+filename = "precc_triangulation.txt"
 
 cdt = PM.CDT(filename)
 

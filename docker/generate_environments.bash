@@ -2,7 +2,7 @@
 
 REF_SLUG=${1:+":"}${1:-""}
 
-# order is important as doc depends on run 
+# order is important as doc depends on run
 for evt in build run doc
 do
     echo "Building ${evt}-environment${REF_SLUG}"

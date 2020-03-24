@@ -6,34 +6,61 @@ Created on Wed Nov 14 21:48:35 2018
 """
 
 import numpy as np
-from scipy.interpolate import interp1d
 
-import MeshTools as MT
-import MeshTools.GridTools as GT
+from ._MeshTools import idtype
+from . import GridTools as GT
+from . import vtkwriters as vtkw
+from . import RawMesh
 
-def make_saw(pinch):
-    return interp1d(
-        [0., 1/3, 2/3, 1.],
-        [0.5, pinch, 1. - pinch, 0.5],
-        bounds_error=True
-    )
 
-def kershaw_mesh(shape, pinchx=0.1, pinchy=None, output_ijk=False):
-    nx, ny, nz = shape
-    grid = GT.grid2hexs(shape=(nx, ny, nz), output_ijk=output_ijk)
-    vertices, cells = grid[:2]
-    z = vertices[:, 2]
-    under = z < 0.5
-    above = np.logical_not(under)
-    def saw_axis(axis, pinch):
-        saw = make_saw(pinch)(vertices[:, axis])
-        z[under]*= saw[under] / 0.5
-        z[above] = 1. - (1. - z[above]) * (1. - saw[above]) / 0.5
-    if pinchx:
-        saw_axis(0, pinchx)
-    if pinchy:
-        saw_axis(1, pinchy)
-    mesh = MT.HexMesh.make(vertices, MT.idarray(cells))
-    if output_ijk:
-        return mesh, grid[-1]
-    return mesh
+def idarray(a):
+    return np.asarray(a, dtype=idtype())
+
+
+def to_vtu(mesh, filename, **kwargs):
+    if type(mesh) is RawMesh:
+        cell_faces = mesh.cell_faces
+        face_nodes = mesh.face_nodes
+        vtu = vtkw.polyhedra_vtu_doc(
+            mesh.vertices,
+            [[face_nodes[face] for face in faces] for faces in cell_faces],
+            **kwargs
+        )
+    else:
+        offsets, cellsnodes = mesh.cells_nodes_as_COC()
+        vtu = vtkw.vtu_doc_from_COC(
+            mesh.vertices_array(),
+            np.array(offsets[1:], copy=False),  # vtk: no first zero offset
+            np.array(cellsnodes, copy=False),
+            mesh.cells_vtk_ids(),
+            **kwargs
+        )
+    vtkw.write_vtu(vtu, filename)
+
+
+def grid3D(**kwargs):
+    if "steps" in kwargs:
+        assert len(kwargs) == 1
+        vertices, hexs = GT.steps2hex(kwargs["steps"], idtype=idtype())
+    else:
+        assert not "steps" in kwargs
+        vertices, hexs = GT.grid2hexs(**kwargs, idtype=idtype())
+    return HexMesh.make(vertices, hexs)
+
+
+# def grid3D(**kwargs):
+#    vertices, hexs = GT.grid2hexs(**kwargs, idtype=idtype())
+#    return HexMesh.make(vertices, hexs)
+
+## Tet Volumes
+# A = mesh.vertices[mesh.cellnodes[:, 0]]
+# AB, AC, AD = (mesh.vertices[mesh.cellnodes[:, i+1]] - A for i in range(3))
+# det = AB[:, 0] * AC[:, 1] * AD[:, 2]
+# det+= AB[:, 1] * AC[:, 2] * AD[:, 0]
+# det+= AB[:, 2] * AC[:, 0] * AD[:, 1]
+# det-= AB[:, 2] * AC[:, 1] * AD[:, 0]
+# det-= AB[:, 0] * AC[:, 2] * AD[:, 1]
+# det-= AB[:, 1] * AC[:, 0] * AD[:, 2]
+# vol = np.abs(det) / 6.
+
+# print(vol.min(), vol.max())

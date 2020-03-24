@@ -1,114 +1,60 @@
-# see https://docs.gitlab.com/ce/ci/yaml/README.html for all available options
+image: ${CI_REGISTRY}/${CI_GROUP_SUBREGISTRY}/${CI_BUILD_ENVIRONMENT_IMAGE}
 
-image: docker:stable
-
-services:
-  - docker:stable-dind
-
-variables:
-  # When using dind, it's wise to use the overlayfs driver for
-  # improved performance.
-  # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
-  # and https://gitlab.inria.fr/charms/ComPASS/issues/72
-  DOCKER_DRIVER: overlay2
-  # Specify to Docker where to create the certificates, Docker will
-  # create them automatically on boot, and will create
-  # `/certs/client` that will be shared between the service and job
-  # container, thanks to volume mount from config.toml
-  # cf. https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
-  DOCKER_TLS_CERTDIR: "/certs"
-  # Project specifc variables
-  CI_REGISTRY_IMAGE: registry.gitlab.inria.fr/charms/meshtools
-  WHEEL_PRERELTAG: ".dev_$CI_COMMIT_REF_SLUG"
-
-# this sequence will force to have unit tests in docker image. Making unit test before build docker image help remove unit test, but need to split dockerfile multijob build.
 stages:
-    - build_docker_environments
-    - build
-    - test
-    - release
-    - documentation
+  - check-format
+  - build
+  - test
+  - documentation
 
-before_script:
-  # - echo "Preparing build..."
-  # - docker info
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.inria.fr
-   
-
-after_script:
-  - echo "After script section"
-  - echo "For example you might do some cleanup here"
-
-# here we build specific docker environments
-# (cf. docker/README.md)
-build_docker_environments:
-  stage: build_docker_environments
+check:
+  stage: check-format
   tags:
-    - build
-  only:
-    - /^docker_evt_.*$/
+    - docker
+  #only:
+  #  - merge_requests
   script:
-    - pushd docker
-    - /bin/sh -e generate_environments.bash
-    - popd
+    # We could check format only for merge requests
+    # using only merge_requests
+    # and CI_MERGE_REQUEST_SOURCE_BRANCH_SHA and CI_MERGE_REQUEST_SOURCE_BRANCH_SHA
+    # variables but the latest are not correclyt set
+    - git fetch origin master
+    - merge_base=$(git merge-base origin/master HEAD)
+    - changed_files=$(git diff --no-ext-diff --name-only ${merge_base}...HEAD)
+    - echo "Changed files:" ${changed_files}
+    - pre-commit run --files ${changed_files}
 
 build:
   stage: build
   tags:
-    - build
+    - docker
   script:
-    - mkdir -p wheel
-    - echo $PWD:/localfs
-    - echo $WHEEL_PRERELTAG
-    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/build-environment python3 setup.py egg_info --tag-build=$WHEEL_PRERELTAG bdist_wheel -d wheel
+    - python3 setup.py bdist_wheel
   artifacts:
     paths:
-    - wheel
+    - dist/
+    expose_as: wheel
+    when: on_success
 
-integration_test:
+test:
   stage: test
   tags:
-    - test
+    - docker
+  before_script:
+    - pip3 install dist/MeshTools-*.whl
   script:
-    # FIXME: integration test shall not be run as root
-    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/run-environment  /bin/bash sdk/run_tests.bash $WHEEL_PRERELTAG
-
-release:
-  stage: release
-  tags:
-    - build
-  script:
-    # This is a trick to store the wheel corresponding to the master branch
-    # it is because we cannot use the job token to download artifacts
-    # using the gitlab API with gitlab CE (it is a premium feature)
-    # hence the trick to store the wheel in a docker image (:-()
-    # this is transitory before the package is released on pypi
-    - docker build -t registry.gitlab.inria.fr/charms/meshtools/master-wheel --build-arg MESHTOOLS_WHEEL_PATH=`ls wheel/*.whl` -f docker/store_wheel/Dockerfile .
-    - docker push registry.gitlab.inria.fr/charms/meshtools/master-wheel
-  only: 
-    refs: 
-        - master
-  when: on_success
-
-tag-release:
-  stage: release
-  tags:
-    - build
-  script:
-    - echo "Nothing specific..."
-  only:
-    - tags
-  when: on_success
+    - cd tests/ci && python3 -m pytest . && cd -
 
 pages:
   stage: documentation
   tags:
-    - build
+    - docker
+  only:
+    - master
+  before_script:
+    - pip3 install dist/MeshTools-*.whl
+    - mkdir -p public
   script:
-    - mkdir -p public/wheels
-    - cp -v wheel/*.whl public/wheels
-    - docker run --rm -v $PWD:/localfs $CI_REGISTRY_IMAGE/doc-environment /bin/bash -e docs/generate_doc.bash $WHEEL_PRERELTAG 
+    - /bin/bash -e docs/generate_doc.bash
   artifacts:
     paths:
     - public
-

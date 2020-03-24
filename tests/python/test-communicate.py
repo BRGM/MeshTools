@@ -11,8 +11,8 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
 if rank == 0:
-#    data = {'a': 7, 'b': 3.14}
-    data = 'ma jolie chaine'
+    #    data = {'a': 7, 'b': 3.14}
+    data = "ma jolie chaine"
     req = comm.isend(data, dest=1, tag=11)
     req.wait()
     data = None
@@ -21,4 +21,4 @@ elif rank == 1:
     req = comm.irecv(source=0, tag=11)
     data = req.wait()
 
-print('On', rank, 'data =', data)    
+print("On", rank, "data =", data)

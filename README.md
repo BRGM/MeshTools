@@ -1,6 +1,11 @@
+
+The documentation is currently served on
+[INRIA's gitlab server pages](https://charms.gitlabpages.inria.fr/MeshTools).
+
+
 The MeshTools package has originally been developed to share a common mesh data
 structure with the ComPASS multiphase multicomponent flow simulation code
-(cf. the [CHARMS project website](http://www.anr-charms.org)). 
+(cf. the [CHARMS project website](http://www.anr-charms.org)).
 
 For the moment MeshTools essentially serves as a pre and post-processing module
 for the ComPASS code. Yet, there is no plan to make it an exhaustive tool for

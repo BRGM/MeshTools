@@ -12,7 +12,4 @@ mesh = MT.HexMesh.make(vertices, cells)
 vertices = MT.as_coordinate_array(mesh.vertices)
 cellnodes = np.array([np.array(nodes) for nodes in mesh.connectivity.cells.nodes])
 
-vtkw.write_vtu(
-    vtkw.vtu_doc(vertices, cellnodes),
-    'hexs.vtu'
-)
+vtkw.write_vtu(vtkw.vtu_doc(vertices, cellnodes), "hexs.vtu")

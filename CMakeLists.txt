@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.12.0)
-cmake_policy(VERSION 3.12.0)
+cmake_minimum_required(VERSION 3.12)
+cmake_policy(VERSION 3.12)
 
 project(MeshTools CXX)
 
 if ( COMMAND cmake_policy )
-  cmake_policy( SET CMP0003 NEW )  
+  cmake_policy( SET CMP0003 NEW )
 endif()
 set( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true )
 
@@ -59,7 +59,26 @@ set(PYBIND11_PYTHON_VERSION 3 CACHE STRING "Python version to use for compiling 
 # -- Dependencies --
 
 set(MESHTOOLS_THIRDPARTIES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparties)
-add_subdirectory(${MESHTOOLS_THIRDPARTIES_DIRECTORY})
+
+find_package(pybind11 QUIET) # try locally
+if (NOT pybind11_FOUND) # else fetch it from github
+    message(STATUS "Could NOT find pybind11 (fetching it from GitHub)")
+    include(FetchContent)
+    FetchContent_Declare(
+        pybind11
+        GIT_REPOSITORY https://github.com/pybind/pybind11.git
+        GIT_TAG        v2.4.3
+    )
+    if(${CMAKE_VERSION} VERSION_LESS 3.14)
+        FetchContent_GetProperties(pybind11)
+        if(NOT pybind11_POPULATED)
+        FetchContent_Populate(pybind11)
+        add_subdirectory(${pybind11_SOURCE_DIR} ${pybind11_BINARY_DIR})
+        endif()
+    else()
+        FetchContent_MakeAvailable(pybind11)
+    endif()
+endif()
 
 # The following test is not mandatory as python interpreter comes as a by-product of requiring pybind11
 if(NOT ${PYTHONINTERP_FOUND})
@@ -95,9 +114,9 @@ endif(${MESHTOOLS_TRIES_TO_USE_CGAL})
 if(${MESHTOOLS_USES_CGAL})
     set(MESHTOOLS_CGAL_DIRECTORY ${MESHTOOLS_ROOT_DIRECTORY}/src/cgal)
     if (WIN32)
-      get_filename_component(GMP_BASENAME ${GMP_LIBRARIES} NAME_WLE)  
+      get_filename_component(GMP_BASENAME ${GMP_LIBRARIES} NAME_WLE)
       file(COPY ${GMP_LIBRARIES_DIR}/${GMP_BASENAME}.dll DESTINATION ${CMAKE_INSTALL_PREFIX})
-      get_filename_component(MPFR_BASENAME ${MPFR_LIBRARIES} NAME_WLE)  
+      get_filename_component(MPFR_BASENAME ${MPFR_LIBRARIES} NAME_WLE)
       file(COPY ${MPFR_LIBRARIES_DIR}/${MPFR_BASENAME}.dll DESTINATION ${CMAKE_INSTALL_PREFIX})
     endif (WIN32)
 endif(${MESHTOOLS_USES_CGAL})
@@ -113,9 +132,9 @@ endif(MESHTOOLS_MASTER_PROJECT)
 
 # -- targets and installation
 
-install(EXPORT MeshTools DESTINATION share/cmake/)
+# install(EXPORT MeshTools DESTINATION share/cmake/)
 # the usual way is to pass the python package directory through MESHTOOLS_PYTHON_PACKAGE_DIRECTORY
 # yet targets (python modules) are also exported directly from the build tree
-# to use them you will need to reference the build tree 
+# to use them you will need to reference the build tree
 # cf. https://gitlab.kitware.com/cmake/community/wikis/doc/tutorials/Exporting-and-Importing-Targets
-export(EXPORT MeshTools FILE share/cmake/meshtools-exports.cmake)
+# export(EXPORT MeshTools FILE share/cmake/meshtools-exports.cmake)

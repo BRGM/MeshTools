@@ -12,7 +12,7 @@ vertices coordinates as follows:
     4 -1437.7840000186861 -1437.7835762743769 200.00001525873645
     ...
 
-and a file named ``MIXED.txt`` with cell connectivity given 
+and a file named ``MIXED.txt`` with cell connectivity given
 with 1 based indexing :
 
 .. code-block:: text
@@ -35,7 +35,7 @@ Then convert vertices to numpy array and described the mesh elements
 using **a zero-based** node indexing
 Cells with 6 vertices are considered to be wedges en cells with
 8 elements are considered to be Hexahedra.
-Meshtools follows the legacy vtk cell format to describe a cell 
+Meshtools follows the legacy vtk cell format to describe a cell
 from its nodes (cf. `page 9 of the specification document <https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf#page=9>`_).
 
 .. literalinclude:: hybrid_mesh.py

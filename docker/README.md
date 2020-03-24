@@ -7,4 +7,3 @@ docker login registry.gitlab.inria.fr
 ```
 
 then in this directory you can run the `generate_environments.bash`script.
-
