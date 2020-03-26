@@ -42,6 +42,7 @@ test:
   before_script:
     - pip3 install dist/MeshTools-*.whl
   script:
+    - python3 MeshTools/vtkwriters.py
     - cd tests/ci && python3 -m pytest . && cd -
 
 pages:

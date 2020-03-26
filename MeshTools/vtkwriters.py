@@ -277,6 +277,8 @@ def vtu_doc(
         ]
 
     vertices = vtu_vertices(vertices)
+    if type(celltypes) is str:
+        celltypes = vtk_celltype[celltypes]
     try:
         celltypes = int(celltypes)
     except TypeError:
@@ -708,3 +710,4 @@ if __name__ == "__main__":
     write_unstructured_snapshots(
         times, "ufoo", vertices, connectivity, datas, "cell", proppath="values",
     )
+    points = points_as_vtu_doc(np.array([[0, 0, 0]], dtype=np.double))
