@@ -7,7 +7,7 @@ Created on Wed Nov 14 21:48:35 2018
 
 import numpy as np
 
-from ._MeshTools import idtype
+from ._MeshTools import idtype, HexMesh
 from . import GridTools as GT
 from . import vtkwriters as vtkw
 from . import RawMesh
