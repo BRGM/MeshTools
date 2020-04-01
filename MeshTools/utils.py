@@ -48,6 +48,46 @@ def grid3D(**kwargs):
     return HexMesh.make(vertices, hexs)
 
 
+def extrude(vertices, polygons, offsets):
+    """
+    Extrude a polygon mesh according successing offsets.
+    :param vertices: the 3D vertices of the surface mesh
+    :param polygons: the connectivity table of the polygons (all polygons must be of the same type)
+    :param offsets: a sequence of 3D vector presenting the succesive offsets
+    :return: a tuple of vertices and 3D cell connectivity
+    """
+    vertices = np.asarray(vertices, dtype=np.double)
+    assert vertices.ndim == 2 and vertices.shape[1] == 3
+    offsets = np.asarray(offsets, dtype=np.double)
+    assert offsets.ndim == 2 and offsets.shape[1] == 3
+    print(offsets)
+    polygons = np.asarray(polygons, dtype=np.double)
+    cum_offsets = np.cumsum(offsets, axis=0)
+    new_vertices = np.vstack([vertices,] + [vertices + v for v in cum_offsets])
+    nv = vertices.shape[0]
+    layer = np.hstack([polygons, polygons + nv])
+    nl = offsets.shape[0]
+    cells = np.vstack([layer + k * nv for k in range(nl)])
+    return new_vertices, cells
+
+
+def axis_extrusion(vertices, polygons, offsets, axis=-1):
+    """
+    Extrude a mesh along a given axis.
+    Extrude a polygon mesh according successing offsets.
+    :param vertices: the 3D vertices of the surface mesh
+    :param polygons: the connectivity table of the polygons (all polygons must be of the same type)
+    :param offsets: a sequence of length presenting the succesive offsets along axis `axis`
+    :param axis: the extrusion axis (defaults to the latest axis)
+    :return: a tuple of vertices and 3D cell connectivity
+    """
+    offsets = np.asarray(offsets, dtype=np.double)
+    assert offsets.ndim == 1
+    offsets_3d = np.zeros((offsets.shape[0], 3), dtype=np.double)
+    offsets_3d[:, axis] = offsets
+    return extrude(vertices, polygons, offsets_3d)
+
+
 # def grid3D(**kwargs):
 #    vertices, hexs = GT.grid2hexs(**kwargs, idtype=idtype())
 #    return HexMesh.make(vertices, hexs)
