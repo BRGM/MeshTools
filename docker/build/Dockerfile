@@ -1,4 +1,4 @@
-FROM ubuntu:19.10
+FROM ubuntu:20.04
 
 # The following two lines are necessary for the configuration of tzdata
 ENV TZ=Europe/Paris
