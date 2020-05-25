@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     build-essential \
     cmake \
     gcc \
-    clang-format-9 \
+    clang-format \
     libboost-dev \
     libboost-program-options-dev \
     libboost-system-dev \
@@ -48,8 +48,7 @@ ENV CGAL_DIR=/local/src/cgal
 # install pre-commit environment
 WORKDIR /dummy
 COPY .pre-commit-config.yaml .
-RUN ln -s /usr/bin/clang-format-9 /usr/bin/clang-format \
- && git init \
+RUN git init \
  && pre-commit install \
  && pre-commit run --all \
  && rm -rf /dummy
