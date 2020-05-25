@@ -100,8 +100,8 @@ struct Constraint {
     Result operator()(const T1&, const T2&) const noexcept {
       return Result{};
     }
-    Result operator()(const On_curve_sp& cuc1, const On_curve_sp& cuc2) const
-        noexcept {
+    Result operator()(const On_curve_sp& cuc1,
+                      const On_curve_sp& cuc2) const noexcept {
       assert(cuc1 && cuc2);
       if (cuc1->curve == cuc2->curve) {
         auto make_weak_junction = [](auto oc1, auto oc2) {
@@ -118,8 +118,8 @@ struct Constraint {
       }
       return Result{};
     }
-    Result operator()(const On_junction_sp& coc, const On_curve_sp& cuc) const
-        noexcept {
+    Result operator()(const On_junction_sp& coc,
+                      const On_curve_sp& cuc) const noexcept {
       assert(coc && cuc);
       for (auto&& junction : coc->junctions) {
         if (auto weak_junction = this->operator()(junction.first, cuc)) {
@@ -131,8 +131,8 @@ struct Constraint {
       }
       return Result{};
     }
-    Result operator()(const On_curve_sp& cuc, const On_junction_sp& coc) const
-        noexcept {
+    Result operator()(const On_curve_sp& cuc,
+                      const On_junction_sp& coc) const noexcept {
       return this->operator()(coc, cuc);
     }
     Result operator()(const On_junction_sp& coc1,

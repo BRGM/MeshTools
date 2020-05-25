@@ -232,8 +232,8 @@ struct Surface_factory {
       constexpr bool operator<(const Surface_constraint& other) const noexcept {
         return source < other.source;
       }
-      constexpr bool operator==(const Surface_constraint& other) const
-          noexcept {
+      constexpr bool operator==(
+          const Surface_constraint& other) const noexcept {
         return source == other.source;
       }
       // static constexpr value_type default_value() noexcept { return
@@ -1079,8 +1079,8 @@ struct Property_accessor;
 template <typename Point>
 struct Property_accessor<CGAL::Surface_mesh<Point>,
                          typename CGAL::Surface_mesh<Point>::Vertex_index> {
-  auto number_of_active_locations(const CGAL::Surface_mesh<Point>& mesh) const
-      noexcept {
+  auto number_of_active_locations(
+      const CGAL::Surface_mesh<Point>& mesh) const noexcept {
     return mesh.number_of_vertices();
   }
   auto active_locations(const CGAL::Surface_mesh<Point>& mesh) const noexcept {
@@ -1091,8 +1091,8 @@ struct Property_accessor<CGAL::Surface_mesh<Point>,
 template <typename Point>
 struct Property_accessor<CGAL::Surface_mesh<Point>,
                          typename CGAL::Surface_mesh<Point>::Face_index> {
-  auto number_of_active_locations(const CGAL::Surface_mesh<Point>& mesh) const
-      noexcept {
+  auto number_of_active_locations(
+      const CGAL::Surface_mesh<Point>& mesh) const noexcept {
     return mesh.number_of_faces();
   }
   auto active_locations(const CGAL::Surface_mesh<Point>& mesh) const noexcept {

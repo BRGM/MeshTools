@@ -90,7 +90,7 @@ class recursive_wrapper {
 
   const T* get_pointer() const { return p_; }
 
-  operator T const&() const { return this->get(); }
+  operator T const &() const { return this->get(); }
 
   operator T&() { return this->get(); }
 
