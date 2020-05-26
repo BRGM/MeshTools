@@ -242,7 +242,7 @@ def vtu_doc_from_COC(
 ):
     offsets = offsets.astype(np.int32)
     celltypes = celltypes.astype(np.int8)
-    doc = vtk_doc("UnstructuredGrid")
+    doc = vtk_doc("UnstructuredGrid", version="1.0")
     grid = create_childnode(doc.documentElement, "UnstructuredGrid")
     piece = create_childnode(
         grid,
@@ -315,7 +315,7 @@ def vtu_doc(
 def polyhedra_vtu_doc(
     vertices, cells_faces, pointdata=None, celldata=None, ofmt="binary"
 ):
-    doc = vtk_doc("UnstructuredGrid")
+    doc = vtk_doc("UnstructuredGrid", version="1.0")
     grid = create_childnode(doc.documentElement, "UnstructuredGrid")
     nb_cells = len(cells_faces)
     piece = create_childnode(

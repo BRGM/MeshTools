@@ -17,6 +17,13 @@ def test_hexmesh():
 
     vtkw.write_vtu(vtkw.vtu_doc(vertices, cellnodes), "hexs.vtu")
 
+    try:
+        import meshio
+
+        meshio.read("hexs.vtu")
+    except ModuleNotFoundError:
+        pass
+
 
 if __name__ == "__main__":
     test_hexmesh()

@@ -67,7 +67,7 @@ def extrude(vertices, polygons, offsets):
     layer = np.hstack([polygons, polygons + nv])
     nl = offsets.shape[0]
     cells = np.vstack([layer + k * nv for k in range(nl)])
-    return new_vertices, cells
+    return new_vertices, idarray(cells)
 
 
 def axis_extrusion(vertices, polygons, offsets, axis=-1):
