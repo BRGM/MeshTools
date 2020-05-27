@@ -16,14 +16,6 @@ from PackageInfo import PackageInfo
 
 package = PackageInfo("MeshTools")
 
-# FIXME: use generic library version
-package_data = {}
-if os.name == "nt":
-    package_data[package.name] = []
-    for libname in ["gmp10", "mpr-4"]:
-        if Path(f"{package.name}/lib{libname}.dll").exists:
-            package_data[package.name].append(f"lib{libname}.dll")
-
 setup(
     name=package.name,
     version=package.version,
@@ -33,7 +25,6 @@ setup(
     long_description="",
     license="GPL v.3",
     packages=["MeshTools", "MeshTools.io"],
-    package_data=package_data,
     # FIXME: it might be more robust to use git
     #        to copy tracked files to default _skbuild directory
     cmake_install_dir=package.name,
