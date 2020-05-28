@@ -239,9 +239,14 @@ def vtu_doc_from_COC(
     pointdata=None,
     celldata=None,
     ofmt="binary",
+    integer_type=np.int32,
 ):
-    offsets = offsets.astype(np.int32)
-    celltypes = celltypes.astype(np.int8)
+    """
+        :param integer_type: Type to be used for cell types, connectivity and offsets.
+    """
+    offsets = offsets.astype(integer_type)
+    celltypes = celltypes.astype(integer_type)
+    connectivity = connectivity.astype(integer_type)
     doc = vtk_doc("UnstructuredGrid", version="1.0")
     grid = create_childnode(doc.documentElement, "UnstructuredGrid")
     piece = create_childnode(
@@ -268,8 +273,18 @@ def vtu_doc_from_COC(
 
 
 def vtu_doc(
-    vertices, connectivity, celltypes=None, pointdata=None, celldata=None, ofmt="binary"
+    vertices,
+    connectivity,
+    celltypes=None,
+    pointdata=None,
+    celldata=None,
+    ofmt="binary",
+    integer_type=np.int32,
 ):
+    """
+        :param integer_type: Type to be used for cell types, connectivity and offsets.
+    """
+
     @np.vectorize
     def compute_celltype(cellsize):
         return vtk_celltype[
@@ -284,15 +299,15 @@ def vtu_doc(
     except TypeError:
         celltypes = None
     try:
-        connectivity = np.array(connectivity, dtype=np.int64, copy=False)
+        connectivity = np.array(connectivity, dtype=integer_type, copy=False)
     except ValueError:
         # connectivities may have different length
         cellsizes = np.array([len(cell) for cell in connectivity])
         if celltypes is None:
             celltypes = compute_celltype(cellsizes)
-        celltypes = np.array(celltypes, dtype="u1", copy=False)
+        celltypes = np.array(celltypes, dtype=integer_type, copy=False)
         connectivity = np.hstack(connectivity)
-        connectivity = connectivity.astype(np.int64)
+        connectivity = connectivity.astype(integer_type)
     else:
         assert len(connectivity.shape) == 2
         nbcells, cellsize = connectivity.shape
@@ -303,12 +318,19 @@ def vtu_doc(
             assert len(np.unique(cellsizes)) == 1
             celltypes = np.tile(celltypes, nbcells)
     finally:
-        cellsizes = cellsizes.astype(np.int64)
+        cellsizes = cellsizes.astype(integer_type)
         offsets = np.cumsum(cellsizes)
         nbcells = offsets.shape[0]
     assert offsets.shape == celltypes.shape
     return vtu_doc_from_COC(
-        vertices, offsets, connectivity, celltypes, pointdata, celldata, ofmt
+        vertices,
+        offsets,
+        connectivity,
+        celltypes,
+        pointdata,
+        celldata,
+        ofmt,
+        integer_type=integer_type,
     )
 
 
