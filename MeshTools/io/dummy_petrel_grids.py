@@ -222,3 +222,63 @@ def minimum_distance(pts):
             if i < j
         ]
     )
+
+
+def build_regular(nx, nz, xres=1, yres=1, zres=1):
+    cube = petrel_unit_cube()
+    cube[:, 0] = cube[:, 0] * xres
+    cube[:, 1] = cube[:, 1] * yres
+    cube[:, 2] = cube[:, 2] * zres
+    t = lambda x, y, z: np.array((x, y, z), dtype=cube.dtype)
+
+    mesh = []
+    for i in range(nx):
+        cols = []
+        for j in range(nz):
+            cols.append(cube + t(i * xres, 0, j * zres))
+        mesh.append(np.array(cols, dtype=cube.dtype))
+    mesh = np.array(mesh, dtype=cube.dtype)
+    return mesh
+
+
+def shift_depth(col, h):
+    col[:, :, 2] = col[:, :, 2] + h
+    col[0, :4, 2] = col[0, :4, 2] - h
+    col[-1, 4:, 2] = col[-1, 4:, 2] - h
+    return col
+
+
+def build_non_conformable_mesh(nx, nz, h, **kwargs):
+    mesh = build_regular(nx, nz, **kwargs)
+    for i in range(1, nx):
+        mesh[i, :, :, :] = shift_depth(mesh[i, :, :, :], i * h)
+    return mesh
+
+
+def build_one_unconformity_mesh(nx, nz, h, **kwargs):
+    mesh = build_regular(nx, nz, **kwargs)
+    for i in range(int(nx / 2), nx):
+        mesh[i, :, :, :] = shift_depth(mesh[i, :, :, :], h)
+    return mesh
+
+
+def split_cube(pcube, n):
+    cubes = []
+    for i in range(n):
+        cube = pcube.copy()
+        delta = (pcube[4:, 2] - pcube[:4, 2]) / n
+        cube[:4, 2] = pcube[:4, 2] + i * delta
+        cube[4:, 2] = pcube[:4, 2] + (i + 1) * delta
+        cubes.append(cube)
+    return np.array(cubes, dtype=cube.dtype)
+
+
+def refine(cubes, n):
+    cubes2 = []
+    for i in range(cubes.shape[0]):
+        splitted_cubes = []
+        for k in range(cubes.shape[1]):
+            splitted_cubes.extend(split_cube(cubes[i, k], n))
+        splitted_cubes = np.array(splitted_cubes, dtype=cubes.dtype)
+        cubes2.append(splitted_cubes)
+    return np.array(cubes2, dtype=cubes.dtype)
