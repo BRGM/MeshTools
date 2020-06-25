@@ -11,7 +11,7 @@ mesh = dummy_grids.refine(mesh, 2)
 mesh = mesh[:, None, :, ...]
 build_and_dump("one_unconformity_mesh", mesh)
 
-mesh2 = dummy_grids.build_non_conformable_mesh(4, 2, 2, xres=5, yres=5, zres=10)
+mesh2 = dummy_grids.build_non_conformal_mesh(4, 2, 2, xres=5, yres=5, zres=10)
 mesh2 = dummy_grids.refine(mesh2, 2)
 mesh2 = mesh2[:, None, :, ...]
-build_and_dump("non_conformable_mesh", mesh2)
+build_and_dump("non_conformal_mesh", mesh2)

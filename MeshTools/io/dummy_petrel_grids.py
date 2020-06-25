@@ -248,7 +248,7 @@ def shift_depth(col, h):
     return col
 
 
-def build_non_conformable_mesh(nx, nz, h, **kwargs):
+def build_non_conformal_mesh(nx, nz, h, **kwargs):
     mesh = build_regular(nx, nz, **kwargs)
     for i in range(1, nx):
         mesh[i, :, :, :] = shift_depth(mesh[i, :, :, :], i * h)
