@@ -615,7 +615,8 @@ auto add_mesh(py::module module) {
 
 template <typename MeshType>
 void set_uniform_mesh_cellnodes(
-    MeshType& mesh, py::array_t<MT::NodeId, py::array::c_style> cells) {
+    MeshType& mesh,
+    py::array_t<MT::NodeId, py::array::c_style | py::array::forcecast> cells) {
   typedef typename MeshType::Mesh_traits::Cell_type Cell_type;
   constexpr auto nn = Cell_type::nbnodes();
   auto& cellnodes = mesh.connectivity.cells.nodes;
