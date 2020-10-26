@@ -820,6 +820,7 @@ void add_mesh_tools(py::module& module) {
 
   add_uniform_mesh_submodule<MT::Triangle>(module, "TSurf");
   add_uniform_mesh_submodule<MT::Tetrahedron>(module, "TetMesh");
+  add_uniform_mesh_submodule<MT::Wedge>(module, "WedgeMesh");
   add_uniform_mesh_submodule<MT::Hexahedron>(module, "HexMesh");
   // add_uniform_mesh_submodule<MT::Pyramid>(module, "PyramidMesh");
   add_mesh_submodule<Mesh<MT::Tetrahedron, MT::Wedge>>(module, "TetWedgeMesh");
