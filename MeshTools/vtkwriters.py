@@ -486,7 +486,7 @@ def vtm_doc(elements):
     """Creates a composite dataset from paraview files.
     :param elements: is a sequence of filenames or tuple with (element name, filename)
     if not given basenames are used to name blocks,
-    it can als be a dictionnary to define subblocks"""
+    it can also be a dictionnary to define subblocks"""
 
     def refactor(elements):
         result = []
