@@ -103,3 +103,58 @@ def axis_extrusion(vertices, polygons, offsets, axis=-1):
 # vol = np.abs(det) / 6.
 
 # print(vol.min(), vol.max())
+
+
+def find_faces(mesh, faces, fortran_indexing=False):
+    """
+    :param mesh: a MeshTool mesh (typically an hybrid mesh)
+    :param faces: a (possibly heterogeneous) list of faces as list of nodes
+    :param fortran_indexing: True if node numbering start at 1
+    """
+
+    pointers, nodes = mesh.faces_nodes_as_COC()
+    pointers = pointers.array_view()
+    nodes = nodes.array_view()
+    facesizes = pointers[1:] - pointers[:-1]
+    sizes = np.unique(facesizes)
+
+    elements = {}
+    for size in sizes:
+        elts = (facesizes == size).nonzero()[0]
+        elt_nodes = np.array(
+            [nodes[int(p) : (int(p) + int(size))] for p in pointers[elts]]
+        )
+        elt_nodes.sort(axis=1)
+        elements[size] = (elts, elt_nodes, np.dtype([("", nodes.dtype)] * size))
+
+    fsizes = np.array([len(f) for f in faces])
+
+    felements = {}
+    for size in np.unique(fsizes):
+        elts = (fsizes == size).nonzero()[0]
+        elt_nodes = np.array([faces[k] for k in elts], dtype=nodes.dtype)
+        elt_nodes.sort(axis=1)
+        if fortran_indexing:
+            elt_nodes -= 1
+        felements[size] = (elts, elt_nodes)
+
+    found = []
+    notfound = []
+
+    for size, (elts, nodes) in felements.items():
+        if size in elements:
+            melts, mnodes, dt = elements[size]
+            _, foo, indices = np.intersect1d(
+                nodes.view(dt), mnodes.view(dt), return_indices=True
+            )
+            found.append(melts[indices])
+            assert len(foo) <= len(elts)
+            if len(foo) < len(elts):
+                missed = np.ones(len(elts), dtype=np.bool)
+                missed[foo] = False
+                notfound.append(elts[missed.nonzero()[0]])
+        else:
+            notfound.append(elts)
+
+    pack = lambda l: np.hstack(l) if len(l) > 0 else None
+    return pack(found), pack(notfound)
