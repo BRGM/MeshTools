@@ -78,6 +78,7 @@ set(PYBIND11_PYTHON_VERSION
 
 set(MESHTOOLS_THIRDPARTIES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparties)
 
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
 find_package(pybind11 QUIET) # try locally
 if(NOT pybind11_FOUND) # else fetch it from github
   message(STATUS "Could NOT find pybind11 (fetching it from GitHub)")
@@ -97,17 +98,6 @@ if(NOT pybind11_FOUND) # else fetch it from github
     FetchContent_MakeAvailable(pybind11)
   endif()
 endif()
-
-# The following test is not mandatory as python interpreter comes as a
-# by-product of requiring pybind11
-if(NOT ${PYTHONINTERP_FOUND})
-  message(FATAL_ERROR "python interpreter is mandatory, CMake will stop.")
-endif(NOT ${PYTHONINTERP_FOUND})
-# The following test is not mandatory as python interpreter comes as a
-# by-product of requiring pybind11
-if(NOT ${PYTHONLIBS_FOUND})
-  message(FATAL_ERROR "python libraries are mandatory, CMake will stop.")
-endif(NOT ${PYTHONLIBS_FOUND})
 
 # CGAL and its components
 option(MESHTOOLS_TRIES_TO_USE_CGAL
