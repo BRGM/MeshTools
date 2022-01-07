@@ -1,61 +1,37 @@
-image: ${CI_REGISTRY}/${CI_GROUP_SUBREGISTRY}/${CI_BUILD_ENVIRONMENT_IMAGE}
+image: ${CI_BUILD_ENVIRONMENT_IMAGE}:${CI_BUILD_ENVIRONMENT_IMAGE_TAG}
 
 stages:
-  - check-format
+  - check
   - build
   - test
   - documentation
+  - deploy
 
-check:
-  stage: check-format
-  tags:
-    - docker
-  #only:
-  #  - merge_requests
-  script:
-    # We could check format only for merge requests
-    # using only merge_requests
-    # and CI_MERGE_REQUEST_SOURCE_BRANCH_SHA and CI_MERGE_REQUEST_SOURCE_BRANCH_SHA
-    # variables but the latest are not correclyt set
-    - git fetch origin master
-    - merge_base=$(git merge-base origin/master HEAD)
-    - changed_files=$(git diff --no-ext-diff --name-only ${merge_base}...HEAD)
-    - echo "Changed files:" ${changed_files}
-    - pre-commit run --files ${changed_files}
+include:
+  - project: 'brgm/modelisation-geologique/templates'
+    ref: master
+    file:
+      - '/gitlab-ci/check.yml'
+      - '/gitlab-ci/build.yml'
+      - '/gitlab-ci/test.yml'
+      - '/gitlab-ci/deploy.yml'
 
-build:
-  stage: build
-  tags:
-    - docker
-  script:
-    - python3 setup.py bdist_wheel
-  artifacts:
-    paths:
-    - dist/
-    expose_as: wheel
-    when: on_success
+variables:
+  TARGET_PYTHON_PACKAGE_NAME: MeshTools
+  TARGET_PYTEST_DIRECTORY: tests/ci
 
-test:
-  stage: test
-  tags:
-    - docker
-  before_script:
-    - pip3 install dist/MeshTools-*.whl
-  script:
-    - python3 MeshTools/vtkwriters.py
-    - cd tests/ci && python3 -m pytest . && cd -
-
-pages:
-  stage: documentation
-  tags:
-    - docker
-  only:
-    - master
-  before_script:
-    - pip3 install dist/MeshTools-*.whl
-    - mkdir -p public
-  script:
-    - /bin/bash -e docs/generate_doc.bash
-  artifacts:
-    paths:
-    - public
+# pages:
+#   stage: documentation
+#   tags:
+#     - docker
+#   only:
+#     - master
+#   before_script:
+#     - source activate py39
+#     - python -m pip install dist/MeshTools-*.whl
+#     - mkdir -p public
+#   script:
+#     - /bin/bash -e docs/generate_doc.bash
+#   artifacts:
+#     paths:
+#     - public
