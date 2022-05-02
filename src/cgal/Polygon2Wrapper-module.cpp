@@ -90,8 +90,8 @@ auto mesh_polygon(const Polygon& polygon) {
       (*pv) = vmap[face->vertex(k)];
     }
   }
-  auto in_polygon =
-      py::array_t<bool, py::array::c_style>{(std::size_t)cdt.number_of_faces()};
+  auto in_polygon = py::array_t<bool, py::array::c_style>{
+      static_cast<py::ssize_t>(cdt.number_of_faces())};
   auto p_in = reinterpret_cast<bool*>(in_polygon.request().ptr);
   for (auto face = cdt.finite_faces_begin(); face != cdt.finite_faces_end();
        ++face, ++p_in) {
@@ -146,7 +146,8 @@ auto polygon_has_all_points_inside(
 auto polygon_has_points_inside(
     const Polygon& polygon, py::array_t<double, py::array::c_style>& points) {
   auto buffer = array_to_point_buffer(points);
-  auto res = py::array_t<bool, py::array::c_style>{buffer.n};
+  auto res =
+      py::array_t<bool, py::array::c_style>{static_cast<py::ssize_t>(buffer.n)};
   auto pres = reinterpret_cast<bool*>(res.request().ptr);
   for (auto p = buffer.begin(); p != buffer.end(); ++p) {
     *pres = polygon.has_point_inside(*p);

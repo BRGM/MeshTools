@@ -352,9 +352,11 @@ auto locate_faces_with_cell(
   typedef decltype(Location::second) FaceIndex;
   assert(faces.ndim() == 1);
   const std::size_t nbfaces = faces.size();
-  auto face_cell = py::array_t<MeshTools::CellId, py::array::c_style>{nbfaces};
+  auto face_cell = py::array_t<MeshTools::CellId, py::array::c_style>{
+      static_cast<py::ssize_t>(nbfaces)};
   auto p_face_cell = face_cell.mutable_data();
-  auto face_index = py::array_t<FaceIndex, py::array::c_style>{nbfaces};
+  auto face_index = py::array_t<FaceIndex, py::array::c_style>{
+      static_cast<py::ssize_t>(nbfaces)};
   auto p_face_index = face_index.mutable_data();
   auto p_face = faces.data();
   const auto end = p_face + nbfaces;
@@ -852,7 +854,8 @@ void add_mesh_tools(py::module& module) {
         std::vector<MT::ElementId>& v =
             object.cast<std::vector<MT::ElementId>&>();
         return py::array_t<MT::ElementId, py::array::c_style>{
-            {v.size()}, reinterpret_cast<MT::ElementId*>(v.data()), object};
+            static_cast<py::ssize_t>(v.size()),
+            reinterpret_cast<MT::ElementId*>(v.data()), object};
       },
       py::keep_alive<0, 1>());
 }

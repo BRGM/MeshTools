@@ -140,7 +140,8 @@ auto mesh_segment_soup(const SegmentSoup& soup) {
     fmap[f] = n;
     ++n;
   }
-  auto components_id = py::array_t<std::size_t, py::array::c_style>{{nf}};
+  auto components_id = py::array_t<std::size_t, py::array::c_style>{
+      {static_cast<py::ssize_t>(nf)}};
   auto rid = components_id.mutable_unchecked<1>();
   n = 0;
   for (auto&& component : components) {
@@ -253,7 +254,8 @@ auto mesh(py::array_t<double, py::array::c_style> segment_vertices,
     fmap[f] = n;
     ++n;
   }
-  auto components_id = py::array_t<std::size_t, py::array::c_style>{{nf}};
+  auto components_id = py::array_t<std::size_t, py::array::c_style>{
+      {static_cast<py::ssize_t>(nf)}};
   auto rid = components_id.mutable_unchecked<1>();
   n = 0;
   for (auto&& component : components) {

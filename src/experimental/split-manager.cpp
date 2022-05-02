@@ -138,8 +138,8 @@ PYBIND11_MODULE(SplitManager, module) {
   py::class_<Splittables::Ids>(module, "Ids")
       .def_property_readonly("is_elementary", &Splittables::Ids::is_elementary)
       .def_property_readonly("array", [](const Splittables::Ids& self) {
-        return py::array_t<std::size_t, py::array::c_style>{self.size(),
-                                                            self.data()};
+        return py::array_t<std::size_t, py::array::c_style>{
+            static_cast<py::ssize_t>(self.size()), self.data()};
       });
 
   py::class_<Splittables>(module, "Splittables")
