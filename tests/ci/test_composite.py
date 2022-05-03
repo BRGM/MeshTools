@@ -37,7 +37,10 @@ def test_write_composite():
     vtkw.write_vtm(vtkw.vtm_doc(["diamond.vtu", "tet.vtu"]), "composite")
     vtkw.write_vtm(
         vtkw.vtm_doc(
-            {"copy1": ["diamond.vtu", "tet.vtu"], "copy2": ["diamond.vtu", "tet.vtu"],}
+            {
+                "copy1": ["diamond.vtu", "tet.vtu"],
+                "copy2": ["diamond.vtu", "tet.vtu"],
+            }
         ),
         "composite_with_duplicates",
     )

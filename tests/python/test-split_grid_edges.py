@@ -133,5 +133,7 @@ raw_mesh, original_cell = mesh.as_hybrid_mesh(
     face_centers=quadrangle_centers,
 )
 MT.to_vtu(
-    raw_mesh, "splitted_grid_edges", celldata={"original_cell": original_cell},
+    raw_mesh,
+    "splitted_grid_edges",
+    celldata={"original_cell": original_cell},
 )

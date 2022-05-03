@@ -18,7 +18,7 @@ x = np.hstack(
     ]
 )
 y = [-1, 1]
-zpos = H * (np.cumprod(np.tile(2, nz))) / 2 ** nz
+zpos = H * (np.cumprod(np.tile(2, nz))) / 2**nz
 z = np.hstack([-zpos[::-1], 0, zpos])
 mesh = MT.grid3D(steps=(x, y, z))
 

@@ -62,7 +62,12 @@ def extrude(vertices, polygons, offsets):
     assert offsets.ndim == 2 and offsets.shape[1] == 3
     polygons = np.asarray(polygons, dtype=np.double)
     cum_offsets = np.cumsum(offsets, axis=0)
-    new_vertices = np.vstack([vertices,] + [vertices + v for v in cum_offsets])
+    new_vertices = np.vstack(
+        [
+            vertices,
+        ]
+        + [vertices + v for v in cum_offsets]
+    )
     nv = vertices.shape[0]
     layer = np.hstack([polygons, polygons + nv])
     nl = offsets.shape[0]

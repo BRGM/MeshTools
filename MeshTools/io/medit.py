@@ -78,9 +78,9 @@ def row_as_void_type(a):
 
 
 def unique_rows(a, **kargs):
-    """ return the index of a unique row of an array
-        order of the array is supposed to be C order
-        if the array is not contiguous a temporary copy is created
+    """return the index of a unique row of an array
+    order of the array is supposed to be C order
+    if the array is not contiguous a temporary copy is created
     """
     a = np.require(a, requirements="C")
     rowtype = row_as_void_type(a)
@@ -95,9 +95,9 @@ def unique_rows(a, **kargs):
 
 
 def rows_in1d(a, b):
-    """ return the index of a unique row of an array
-        order of the array is supposed to be C order
-        if the array is not contiguous a temporary copy is created
+    """return the index of a unique row of an array
+    order of the array is supposed to be C order
+    if the array is not contiguous a temporary copy is created
     """
     assert len(a.shape) == len(b.shape) == 2
     assert a.dtype == b.dtype
@@ -105,7 +105,10 @@ def rows_in1d(a, b):
     b = np.require(b, "C")
     rowtype = row_as_void_type(a)
     return np.in1d(
-        a.view(rowtype), b.view(rowtype), assume_unique=assume_unique, invert=invert,
+        a.view(rowtype),
+        b.view(rowtype),
+        assume_unique=assume_unique,
+        invert=invert,
     )
 
 

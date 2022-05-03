@@ -13,7 +13,9 @@ def _align_face_and_edge(F, e):
     #    print('@', newF, '@', end=' ')
     if newF[1] != e[1]:
         assert newF[-1] == e[1]
-        newF = [e[0],] + newF[:0:-1]
+        newF = [
+            e[0],
+        ] + newF[:0:-1]
     assert newF[1] == e[1]
     return newF
 
@@ -257,7 +259,12 @@ class RawMesh:
         return self._centers(face_nodes)
 
     def _new_vertices(
-        self, cell_centers, kept_cells, face_nodes, kept_faces, face_centers=None,
+        self,
+        cell_centers,
+        kept_cells,
+        face_nodes,
+        kept_faces,
+        face_centers=None,
     ):
         splitted_cells = np.logical_not(kept_cells)
         splitted_faces = np.logical_not(kept_faces)
@@ -313,7 +320,10 @@ class RawMesh:
                 for fi in faces:
                     if kept_faces[fi]:
                         parts.append(
-                            list(face_nodes[fi]) + [cci,]
+                            list(face_nodes[fi])
+                            + [
+                                cci,
+                            ]
                         )
                     else:
                         fci = fc[fi]
@@ -324,7 +334,11 @@ class RawMesh:
         assert len(new_cells) == self.nb_cells
         original_cell = np.fromiter(
             chain.from_iterable(
-                [ci,] * len(parts) for ci, parts in enumerate(new_cells)
+                [
+                    ci,
+                ]
+                * len(parts)
+                for ci, parts in enumerate(new_cells)
             ),
             dtype=MT.idt,
         )
@@ -333,7 +347,9 @@ class RawMesh:
 
     def as_tets(self, cell_centers=None):
         vertices, cells, original = self._new_cells(
-            self.tetrahedron_cells(), self.triangle_faces(), cell_centers=cell_centers,
+            self.tetrahedron_cells(),
+            self.triangle_faces(),
+            cell_centers=cell_centers,
         )
         cells = np.array(cells, dtype=MT.idt)
         assert cells.ndim == 2 and cells.shape[1] == 4
@@ -341,7 +357,7 @@ class RawMesh:
 
     def as_hybrid_mesh(self, cell_centers=None, face_centers=None):
         """
-            Will return a MeshTools.HybridMesh object.
+        Will return a MeshTools.HybridMesh object.
         """
         vertices, cells, original = self._new_cells(
             kept_cells=self.tetrahedron_cells() | self.hexahedron_cells(),

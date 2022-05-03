@@ -906,7 +906,9 @@ def import_eclipse_grid(filename):
     utils.to_vtu(
         tetmesh,
         "cells_as_tets_{0}".format(name),
-        celldata={"original_cell": original_cell,},
+        celldata={
+            "original_cell": original_cell,
+        },
     )
     vertices, cell_faces, face_nodes = grid.process_faults(hexa)
     mesh = RM.RawMesh(vertices=vertices, face_nodes=face_nodes, cell_faces=cell_faces)
@@ -915,7 +917,8 @@ def import_eclipse_grid(filename):
         [np.mean(vertices[face], axis=0) for face in face_nodes]
     )
     raw_mesh, original_cell = mesh.as_hybrid_mesh(
-        cell_centers=hexahedron_centers, face_centers=quadrangle_centers,
+        cell_centers=hexahedron_centers,
+        face_centers=quadrangle_centers,
     )
     utils.to_vtu(
         raw_mesh,

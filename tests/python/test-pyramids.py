@@ -3,7 +3,15 @@ import MeshTools as MT
 import vtkwriters as vtkw
 
 vertices = np.array(
-    [(0, 0, 0), (2, 0, 0), (2, 2, 0), (0, 2, 0), (1, 1, 1), (1, 1, -1),], dtype="d"
+    [
+        (0, 0, 0),
+        (2, 0, 0),
+        (2, 2, 0),
+        (0, 2, 0),
+        (1, 1, 1),
+        (1, 1, -1),
+    ],
+    dtype="d",
 )
 
 mesh = MT.HybridMesh.Mesh()

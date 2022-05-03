@@ -89,7 +89,12 @@ def add_pdataarray_node(parent, name, dtype, ofmt="ascii", nbcomp=None):
 
 
 def add_dataarray(
-    parent, array, name, ofmt="ascii", nbcomp=None, nbitemsbyrow=10,
+    parent,
+    array,
+    name,
+    ofmt="ascii",
+    nbcomp=None,
+    nbitemsbyrow=10,
 ):
     elt = add_dataarray_node(parent, name, array.dtype, ofmt, nbcomp)
     doc = elt.ownerDocument
@@ -242,7 +247,7 @@ def vtu_doc_from_COC(
     integer_type=np.int32,
 ):
     """
-        :param integer_type: Type to be used for cell types, connectivity and offsets.
+    :param integer_type: Type to be used for cell types, connectivity and offsets.
     """
     offsets = offsets.astype(integer_type)
     celltypes = celltypes.astype(integer_type)
@@ -282,13 +287,20 @@ def vtu_doc(
     integer_type=np.int32,
 ):
     """
-        :param integer_type: Type to be used for cell types, connectivity and offsets.
+    :param integer_type: Type to be used for cell types, connectivity and offsets.
     """
 
     @np.vectorize
     def compute_celltype(cellsize):
         return vtk_celltype[
-            {1: "pt", 2: "line", 3: "tri", 4: "tet", 6: "wedge", 8: "hex",}[cellsize]
+            {
+                1: "pt",
+                2: "line",
+                3: "tri",
+                4: "tet",
+                6: "wedge",
+                8: "hex",
+            }[cellsize]
         ]
 
     vertices = vtu_vertices(vertices)
@@ -343,7 +355,10 @@ def polyhedra_vtu_doc(
     piece = create_childnode(
         grid,
         "Piece",
-        {"NumberOfPoints": "%d" % vertices.shape[0], "NumberOfCells": "%d" % nb_cells,},
+        {
+            "NumberOfPoints": "%d" % vertices.shape[0],
+            "NumberOfCells": "%d" % nb_cells,
+        },
     )
     points = create_childnode(piece, "Points")
     add_dataarray(
@@ -410,12 +425,21 @@ def points_as_vtu_doc(vertices, pointdata=None, ofmt="binary"):
     connectivity = np.arange(len(vertices))
     connectivity.shape = (-1, 1)
     return vtu_doc(
-        vertices, connectivity, celltypes="point", pointdata=pointdata, ofmt=ofmt,
+        vertices,
+        connectivity,
+        celltypes="point",
+        pointdata=pointdata,
+        ofmt=ofmt,
     )
 
 
 def block_as_vti_doc(
-    block, location, name, delta=None, origin=None, ofmt="binary",
+    block,
+    location,
+    name,
+    delta=None,
+    origin=None,
+    ofmt="binary",
 ):
     block = np.array(block, copy=False)
     pointdata = celldata = {}
@@ -438,7 +462,11 @@ def block_as_vti_doc(
 
 
 def blocks_as_vti_doc(
-    pointdata=None, celldata=None, delta=None, origin=None, ofmt="binary",
+    pointdata=None,
+    celldata=None,
+    delta=None,
+    origin=None,
+    ofmt="binary",
 ):
     if pointdata is None:
         pointdata = {}
@@ -471,13 +499,15 @@ def blocks_as_vti_doc(
 
 
 def pvd_doc(snapshots):
-    """ snapshots is assumed to be a collection of tuples with the format
+    """snapshots is assumed to be a collection of tuples with the format
     (time, filepath)"""
     doc = vtk_doc("Collection")
     collection = create_childnode(doc.documentElement, "Collection")
     for t, filepath in sorted(snapshots):
         create_childnode(
-            collection, "DataSet", {"timestep": "%g" % t, "file": str(filepath)},
+            collection,
+            "DataSet",
+            {"timestep": "%g" % t, "file": str(filepath)},
         )
     return doc
 
@@ -514,7 +544,9 @@ def vtm_doc(elements):
     try:
         for k, (block_name, subblocks) in enumerate(elements.items()):
             block = create_childnode(
-                multiblock, "Block", {"index": f"{k}", "name": block_name},
+                multiblock,
+                "Block",
+                {"index": f"{k}", "name": block_name},
             )
             add_datasets(block, refactor(subblocks))
     except AttributeError:
@@ -585,7 +617,10 @@ def _write_data_snapshots(
     filepath = os.path.join(filepath, name)
     datafiles = [os.path.relpath(path, os.path.dirname(filepath)) for path in datafiles]
     return write_pvd(
-        pvd_doc(list(zip(times, datafiles))), filepath, indent=indent, newl=newl,
+        pvd_doc(list(zip(times, datafiles))),
+        filepath,
+        indent=indent,
+        newl=newl,
     )
 
 
@@ -605,7 +640,12 @@ def write_block_snapshots(
 ):
     def doc_from_data(data, name):
         return block_as_vti_doc(
-            data, location, name, delta=delta, origin=origin, ofmt=ofmt,
+            data,
+            location,
+            name,
+            delta=delta,
+            origin=origin,
+            ofmt=ofmt,
         )
 
     return _write_data_snapshots(
@@ -670,14 +710,18 @@ def write_unstructured_snapshots(
 
 def points_as_vtu(vertices):
     tmp = np.reshape(vertices, (-1, 3))
-    return vtu_doc(tmp, np.reshape(np.arange(tmp.shape[0]), (-1, 1)),)
+    return vtu_doc(
+        tmp,
+        np.reshape(np.arange(tmp.shape[0]), (-1, 1)),
+    )
 
 
 def polyline_as_vtu(vertices):
     tmp = np.reshape(vertices, (-1, 3))
     assert tmp.shape[0] > 1
     return vtu_doc(
-        tmp, np.transpose(np.vstack([range(tmp.shape[0] - 1), range(1, tmp.shape[0])])),
+        tmp,
+        np.transpose(np.vstack([range(tmp.shape[0] - 1), range(1, tmp.shape[0])])),
     )
 
 
@@ -703,7 +747,9 @@ if __name__ == "__main__":
         for axis in range(dim):
             axisname = ["Ox", "Oy", "Oz"][axis]
             filename = "test-block_%dx%dx%d-along_" % (shape) + axisname
-            pos = [slice(None),] * dim
+            pos = [
+                slice(None),
+            ] * dim
             for k in range(shape[axis]):
                 pos[axis] = k
                 block[tuple(pos)] = k
@@ -730,6 +776,12 @@ if __name__ == "__main__":
     C = np.arange(len(connectivity))
     datas = [C + t for t in times]
     write_unstructured_snapshots(
-        times, "ufoo", vertices, connectivity, datas, "cell", proppath="values",
+        times,
+        "ufoo",
+        vertices,
+        connectivity,
+        datas,
+        "cell",
+        proppath="values",
     )
     points = points_as_vtu_doc(np.array([[0, 0, 0]], dtype=np.double))

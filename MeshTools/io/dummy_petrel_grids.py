@@ -194,7 +194,14 @@ def various_dirty_checks_to_be_cleaned():
 def common_node():
     cube = petrel_unit_cube()
     t = lambda x, y, z: np.array((x, y, z), dtype=cube.dtype)
-    cells = np.array([cube, cube + t(0, 0, 1), cube + t(0, 1, -1), cube + t(0, 1, 0),])
+    cells = np.array(
+        [
+            cube,
+            cube + t(0, 0, 1),
+            cube + t(0, 1, -1),
+            cube + t(0, 1, 0),
+        ]
+    )
     cells.shape = (1, 2, 2, 8, 3)
     cells[0, 1, :, 1::2, 2] -= 0.1  # 1::2 right faces
     return cells

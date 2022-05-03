@@ -38,7 +38,8 @@ as_tsurf = lambda t: MT.TSurf.make(t[0], MT.idarray(t[1]))
 verts, faces, normals, values = isocontour
 verts = rescale_into_unit_box(verts)
 MT.to_vtu(
-    as_tsurf((verts, faces)), "%s_eggs.vtu" % (os.path.splitext(__file__)[0]),
+    as_tsurf((verts, faces)),
+    "%s_eggs.vtu" % (os.path.splitext(__file__)[0]),
 )
 
 tsurf = CGAL.TSurf(verts, faces)
@@ -51,7 +52,8 @@ offseted_tsurf.remove_faces(fc[:, 0] + fc[:, 1] - 1 < 0)
 
 verts, faces = offseted_tsurf.as_arrays()
 MT.to_vtu(
-    as_tsurf((verts, faces)), "%s_offseted_eggs.vtu" % (os.path.splitext(__file__)[0]),
+    as_tsurf((verts, faces)),
+    "%s_offseted_eggs.vtu" % (os.path.splitext(__file__)[0]),
 )
 
 polylines = CGAL.intersection_curves(tsurf, offseted_tsurf)
