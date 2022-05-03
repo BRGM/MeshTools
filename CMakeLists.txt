@@ -138,7 +138,7 @@ if(${MESHTOOLS_USES_CGAL})
 endif(${MESHTOOLS_USES_CGAL})
 
 option(MESHTOOLS_COMPILES_EXPERIMENTAL_FEATURES
-       "Compiles experimental features." ON
+       "Compiles experimental features." OFF
 )
 
 # -- MeshTools source code --
