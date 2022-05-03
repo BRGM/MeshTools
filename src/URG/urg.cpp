@@ -413,16 +413,10 @@ PYBIND11_MODULE(URG, module) {
   py::class_<Plane>(module, "Plane").def(py::init<Point, Vector>());
 
   py::class_<Hull_surface>(module, "Hull_surface")
-      .def("as_arrays",
-           (decltype(&as_numpy_arrays<Hull_surface>)) &
-               as_numpy_arrays<Hull_surface>)  // decltype is due to gcc bug
-      ;
+      .def("as_arrays", &as_numpy_arrays<Hull_surface>);
 
   py::class_<Surface_mesh>(module, "Surface_mesh")
-      .def("as_arrays",
-           (decltype(&as_numpy_arrays<Surface_mesh>)) &
-               as_numpy_arrays<Surface_mesh>)  // decltype is due to gcc bug
-      ;
+      .def("as_arrays", &as_numpy_arrays<Surface_mesh>);
 
   py::class_<Hull>(module, "Hull")
       .def(py::init([](py::list l) {

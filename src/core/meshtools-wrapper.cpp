@@ -420,13 +420,8 @@ auto pybind_vector(py::module module, const char* classname) {
   typedef int8_t byte;
   static_assert(sizeof(byte) == 1, "Inconsistent byte size.");
   return py::bind_vector<Vector>(module, classname)
-      .def_static("from_raw_array",
-                  (decltype(&from_raw_array<Vector>)) &
-                      from_raw_array<Vector>)  // decltype is due to gcc bug
-      .def("raw_array",
-           (decltype(&as_raw_array<Vector>)) &
-               as_raw_array<Vector>,  // decltype is due to gcc bug
-           py::keep_alive<0, 1>());
+      .def_static("from_raw_array", &from_raw_array<Vector>)
+      .def("raw_array", &as_raw_array<Vector>, py::keep_alive<0, 1>());
 }
 
 template <typename Vector>
@@ -582,16 +577,10 @@ auto add_mesh(py::module module) {
                [](const Mesh& mesh) {
                  return extract_ids(mesh.connectivity.faces);
                })
-          .def("distribute",
-               (decltype(&distribute<Mesh>)) &
-                   distribute<Mesh>)  // decltype is due to gcc bug
-          .def("locate_faces_with_cell",
-               (decltype(&locate_faces_with_cell<Mesh>)) &
-                   locate_faces_with_cell<Mesh>)  // decltype is due to gcc bug
+          .def("distribute", &distribute<Mesh>)
+          .def("locate_faces_with_cell", &locate_faces_with_cell<Mesh>)
           .def("identify_faces_from_positions",
-               (decltype(&identify_faces_from_positions<Mesh>)) &
-                   identify_faces_from_positions<Mesh>)  // decltype is due to
-                                                         // gcc bug
+               &identify_faces_from_positions<Mesh>)
           .def("set_vertices", &set_mesh_vertices<Mesh>)
           .def(py::pickle(
               [](const Mesh& mesh) {  // __getstate__
