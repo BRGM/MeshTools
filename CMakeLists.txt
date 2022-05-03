@@ -102,7 +102,7 @@ message(STATUS "pybind11 version: ${pybind11_VERSION}")
 
 # CGAL and its components
 option(MESHTOOLS_TRIES_TO_USE_CGAL
-       "look for CGAL and tries to compile specific bindings" ON
+       "look for CGAL and tries to compile specific bindings" OFF
 )
 if(${MESHTOOLS_TRIES_TO_USE_CGAL})
   find_package(CGAL QUIET COMPONENTS Core)
