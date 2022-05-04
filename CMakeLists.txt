@@ -32,9 +32,7 @@ if(NOT CMAKE_BUILD_TYPE)
   )
 endif(NOT CMAKE_BUILD_TYPE)
 
-# compiled python modules will be put in
-# ${CMAKE_INSTALL_PREFIX}/${MESHTOOLS_PYTHON_PACKAGE_NAME}
-set(MESHTOOLS_PYTHON_PACKAGE_NAME MeshTools)
+set(MESHTOOLS_PYTHON_PACKAGE MeshTools)
 
 # will not override a user-provided installation prefix (e.g. using cmake
 # -DCMAKE_INSTALL_PREFIX=...)
@@ -51,7 +49,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     # if no specific instalation prefix was provided and if the
     # MESHTOOLS_PYTHON_PACKAGE_DIRECTORY variable is not set default to the
     # source directory cmake export will be put there and python modules will be
-    # put in ${CMAKE_INSTALL_PREFIX}/${MESHTOOLS_PYTHON_PACKAGE_NAME}
+    # put in ${CMAKE_INSTALL_PREFIX}/${MESHTOOLS_PYTHON_PACKAGE}
     set(CMAKE_INSTALL_PREFIX
         ${CMAKE_CURRENT_SOURCE_DIR}
         CACHE
@@ -150,9 +148,8 @@ endif(MESHTOOLS_MASTER_PROJECT)
 
 # -- targets and installation
 
-# install(EXPORT MeshTools DESTINATION share/cmake/) the usual way is to pass
-# the python package directory through MESHTOOLS_PYTHON_PACKAGE_DIRECTORY yet
-# targets (python modules) are also exported directly from the build tree to use
+install(EXPORT MeshTools DESTINATION share/cmake)
+# targets (python modules) are also exported directly to the build tree to use
 # them you will need to reference the build tree cf.
 # https://gitlab.kitware.com/cmake/community/wikis/doc/tutorials/Exporting-and-Importing-Targets
-# export(EXPORT MeshTools FILE share/cmake/meshtools-exports.cmake)
+export(EXPORT MeshTools FILE share/cmake/meshtools-exports.cmake)

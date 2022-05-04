@@ -17,4 +17,8 @@ endif()
 pybind11_add_module(Corefinement corefinement.cpp)
 target_link_libraries(Corefinement PRIVATE CGAL::CGAL)
 
-install(TARGETS CGALWrappers Corefinement DESTINATION .)
+install(
+  TARGETS CGALWrappers Corefinement
+  DESTINATION ${MESHTOOLS_PYTHON_PACKAGE}
+  EXPORT MeshTools
+)

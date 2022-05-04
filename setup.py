@@ -1,31 +1,15 @@
-import sys
-
-try:
-    from skbuild import setup
-except ImportError:
-    print("scikit-build is required to build from source!", file=sys.stderr)
-    print("Install it running: python -m pip install scikit-build")
-    sys.exit(1)
-
+# dirty workaround around sysconfig.get_platform bug on MacOSX
 import os
-from pathlib import Path
-import platform
+import sysconfig
 
-sys.path.insert(0, Path("maintenance").as_posix())
-from PackageInfo import PackageInfo
+platform = sysconfig.get_platform()
+if platform.startswith("macosx"):
+    assert all(platform.split("-")), "Cannot used platform information!"
+    os.environ["_PYTHON_HOST_PLATFORM"] = platform
 
-package = PackageInfo("MeshTools")
 
-setup(
-    name=package.name,
-    version=package.version,
-    author="various authors",
-    author_email="anr-charms@brgm.fr",
-    description="A python library for managing mesh information and passing it to ComPASS.",
-    long_description="",
-    license="GPL v.3",
-    packages=["MeshTools", "MeshTools.io"],
-    # FIXME: it might be more robust to use git
-    #        to copy tracked files to default _skbuild directory
-    cmake_install_dir=package.name,
-)
+from skbuild import setup
+
+# packages must be listed in setup.py to be intercepted by scikit-build
+# cf. https://scikit-build.readthedocs.io/en/latest/usage.html#setuptools-options
+setup(packages=["MeshTools", "MeshTools.io"])
