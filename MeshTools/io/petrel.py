@@ -5,11 +5,11 @@ import sys, re, os
 
 from .. import _MeshTools as MT
 from .. import utils
-from .. import vtkwriters as vtkw
 from .. import PetrelMesh as PM
 from .. import RawMesh as RM
 from ..edgeutils import *
 from ..io.face_id import is_same_face
+import vtkwriters as vtkw
 
 # 2--3
 # |  |

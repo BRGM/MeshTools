@@ -5,7 +5,7 @@ import numpy as np
 from skimage.measure import marching_cubes_lewiner as marching_cubes
 import MeshTools as MT
 import MeshTools.CGALWrappers as CGAL
-import MeshTools.vtkwriters as vtkw
+import vtkwriters as vtkw
 
 shape = nx, ny, nz = (50,) * 3
 steps = (

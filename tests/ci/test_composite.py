@@ -1,6 +1,6 @@
 import numpy as np
 
-from MeshTools import vtkwriters as vtkw
+import vtkwriters as vtkw
 
 # fmt: off
 vertices = np.array(

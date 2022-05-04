@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import MeshTools.vtkwriters as vtkw
+import vtkwriters as vtkw
 
 
 def test_vti():

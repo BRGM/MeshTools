@@ -1,7 +1,7 @@
 # from collections import namedtuple
 import numpy as np
 
-from MeshTools import vtkwriters as vtkw
+import vtkwriters as vtkw
 
 # from MeshTools.io.petrel import PetrelGrid
 # from MeshTools.RawMesh import RawMesh

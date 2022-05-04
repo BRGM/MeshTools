@@ -1,6 +1,6 @@
 import numpy as np
 import MeshTools as MT
-import MeshTools.vtkwriters as vtkw
+import vtkwriters as vtkw
 
 
 def print_collection(iterable):

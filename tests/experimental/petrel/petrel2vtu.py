@@ -2,7 +2,7 @@ import sys
 import os
 import numpy as np
 import MeshTools.io.petrel as petrel
-import MeshTools.vtkwriters as vtkw
+import vtkwriters as vtkw
 
 filename = sys.argv[1]
 mesh, perm = petrel.import_eclipse_grid(filename)

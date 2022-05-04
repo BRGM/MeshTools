@@ -7,9 +7,9 @@ Created on Wed Aug 05 09:17:57 2015
 
 import os
 import numpy as np
-import emerge.io.vtkwriters as vtkw
 from emerge.io.iomedit import MeditInfo
 import emerge.io.iofvca as fvca
+import vtkwriters as vtkw
 
 fcva_writer = {
     "standard": fvca.write,

@@ -7,9 +7,9 @@
 #
 import numpy as np
 import MeshTools as MT
-import MeshTools.vtkwriters as vtkw
 import pickle
 from bassin_paris import misc
+import vtkwriters as vtkw
 
 #  Extraction des sommets, connectivités, et numéros de couche
 vertices, cells, cell_layer = misc.extract_mesh()

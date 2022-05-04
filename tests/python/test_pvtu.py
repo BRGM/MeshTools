@@ -1,5 +1,5 @@
 import numpy as np
-import MeshTools.vtkwriters as vtkw
+import vtkwriters as vtkw
 
 
 def test_pvtu():

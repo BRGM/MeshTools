@@ -5,7 +5,7 @@ from MeshTools import to_vtu, HexMesh
 from MeshTools.io.petrel import PetrelGrid
 from MeshTools.RawMesh import RawMesh
 import MeshTools.io.dummy_petrel_grids as dummy_grids
-import MeshTools.vtkwriters as vtkw
+import vtkwriters as vtkw
 
 import pytest
 

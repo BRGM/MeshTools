@@ -6,7 +6,7 @@ import MeshTools.GridTools as GT
 
 import sys
 import datetime
-import MeshTools.vtkwriters as vtkw
+import vtkwriters as vtkw
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()

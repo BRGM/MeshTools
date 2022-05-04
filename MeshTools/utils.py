@@ -9,8 +9,8 @@ import numpy as np
 
 from ._MeshTools import idtype, HexMesh
 from . import GridTools as GT
-from . import vtkwriters as vtkw
 from . import RawMesh
+import vtkwriters as vtkw
 
 
 def idarray(a):

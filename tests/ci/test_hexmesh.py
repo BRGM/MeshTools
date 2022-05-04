@@ -1,7 +1,7 @@
 import numpy as np
 import MeshTools as MT
 import MeshTools.GridTools as GT
-import MeshTools.vtkwriters as vtkw
+import vtkwriters as vtkw
 
 
 def test_hexmesh():

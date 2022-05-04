@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import MeshTools as MT
-import MeshTools.vtkwriters as vtkw
+import vtkwriters as vtkw
 
 dirname = "Lamentin"
 
