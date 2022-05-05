@@ -1,0 +1,21 @@
+name: meshtools-latest
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.9
+  - pip
+  - setuptools>=61
+  - setuptools_scm>=6.2
+  - wheel
+  - scikit-build
+  - numpy
+  - cmake
+  - ninja
+  - pkgconfig
+  - cxx-compiler
+  - pybind11
+  - pip:
+    - verstr
+    - vtkwriters
+    - git+https://github.com/BRGM/MeshTools.git
