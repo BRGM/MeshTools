@@ -132,7 +132,7 @@ def grid2tets(shape, extent=(1.0, 1.0, 1.0)):
             for k in range(nz):
                 vertices[fcz(i, j, k)] = ((i + 0.5) * dx, (j + 0.5) * dy, k * dz)
 
-    tets = np.zeros((24 * ncubes, 4), dtype=np.int)
+    tets = np.zeros((24 * ncubes, 4), dtype=np.intc)
 
     tet = 0
     for i in range(nx - 1):
@@ -316,7 +316,7 @@ def grid2tets(shape, extent=(1.0, 1.0, 1.0)):
     return vertices, tets
 
 
-def steps2hex(steps_along_axes, output_ijk=False, idtype=np.int):
+def steps2hex(steps_along_axes, output_ijk=False, idtype=np.intc):
     x, y, z = (np.asarray(steps) for steps in steps_along_axes)
     assert all(len(a.shape) == 1 for a in (x, y, z))
     # number of nodes
@@ -354,7 +354,7 @@ def steps2hex(steps_along_axes, output_ijk=False, idtype=np.int):
     return vertices, hexs
 
 
-def grid2hexs(idtype=np.int, **kwargs):
+def grid2hexs(idtype=np.intc, **kwargs):
     output_ijk = "output_ijk" in kwargs
     if output_ijk:
         del kwargs["output_ijk"]

@@ -30,7 +30,7 @@ vtkw.write_vtu(
 )
 
 fcenters = mesh.face_centers(mesh.faces_ids(faces))
-patches = retrieve("patches", np.int)
+patches = retrieve("patches", np.intc)
 assert fcenters.shape[0] == patches.shape[0]
 
 vtkw.write_vtu(

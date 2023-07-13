@@ -124,7 +124,7 @@ for _, old_edge, new_edges in splitted_edges:
     for face in edge_map.edge_faces[old_edge]:
         face_nodes[face] = edge.replace_edge(face_nodes[face], old_edge, new_edges)
 
-face_nodes = [np.array(nodes, copy=False, dtype=np.int) for nodes in face_nodes]
+face_nodes = [np.array(nodes, copy=False, dtype=np.intc) for nodes in face_nodes]
 
 mesh = RM.RawMesh(vertices=vertices, face_nodes=face_nodes, cell_faces=cell_faces)
 raw_mesh, original_cell = mesh.as_hybrid_mesh(

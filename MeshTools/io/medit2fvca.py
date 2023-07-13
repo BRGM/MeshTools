@@ -80,7 +80,7 @@ fcva_writer["compass"](basename, mesh, faces_index)
 
 # Append node information
 dirichlet_nodes = np.unique(np.ravel(mesh.faces[dirichlet_faces]))
-IdNode = np.zeros(mesh.vertices.shape[0], dtype=np.int)
+IdNode = np.zeros(mesh.vertices.shape[0], dtype=np.intc)
 IdNode[dirichlet_nodes] = 1
 with open(basename + ".msh", "a") as f:
     f.write("Node info: 1 for dirichlet node\n")

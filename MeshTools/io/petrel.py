@@ -261,7 +261,7 @@ def build_segs_tri(segs_glo, pvertices):
     nmap = {ss[i]: nodes_tri[i] for i in range(len(ss))}
     segs_tri = np.array([nmap[s] for s in segs_glo.flatten(order="F")])
     segs_tri = segs_tri.reshape((-1, 2), order="F")
-    segs_tri = np.array(segs_tri, dtype=np.int32)
+    segs_tri = np.array(segs_tri, dtype=np.intc)
     nmap = {nodes_tri[i]: ss[i] for i in range(len(ss))}
     return nmap, segs_tri, vertices_tri
 
@@ -750,7 +750,7 @@ class PetrelGrid(object):
 
     def process(self):
         vertices, ids = [], []
-        new_ids = np.zeros(8, dtype=np.long)
+        new_ids = np.zeros(8, dtype=np.int_)
         # Coordonnées X, Y et Z de chaque pilier. Shape (NX+1,NY+1,NZ+1,8)
         # Va contenir pour chaque noeud de chaque pilier les coordonnées
         # des noeuds de chaque cellule

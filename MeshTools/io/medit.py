@@ -9,7 +9,7 @@ from itertools import combinations
 import numpy as np
 
 # this should be always the same as we use byte comparisons
-_index_type = np.int
+_index_type = np.intc
 
 
 def _check_keyword(line, keyword, check=None, get_value_type=None):
@@ -187,7 +187,7 @@ class MeditInfo(object):
 #        )
 #        if output_triangles:
 #            absolute_triangle_index = self.faces_indexes(self.triangles)
-#            bad_triangles = np.array(absolute_triangle_index==-1, dtype=np.int)
+#            bad_triangles = np.array(absolute_triangle_index==-1, dtype=np.intc)
 #            vtkw.write_vtu(
 #                vtkw.vtu_doc(self.vertices, self.triangles,
 #                             celldata={'surface_patch': self.triangles_index,
