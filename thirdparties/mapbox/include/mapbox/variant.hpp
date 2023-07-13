@@ -781,8 +781,9 @@ class variant {
   template <
       typename F, typename V,
       typename R = typename detail::result_of_unary_visit<F, first_type>::type>
-  auto VARIANT_INLINE static visit(V& v, F&& f) -> decltype(
-      detail::dispatcher<F, V, R, Types...>::apply(v, std::forward<F>(f))) {
+  auto VARIANT_INLINE static visit(V& v, F&& f)
+      -> decltype(detail::dispatcher<F, V, R, Types...>::apply(
+          v, std::forward<F>(f))) {
     return detail::dispatcher<F, V, R, Types...>::apply(v, std::forward<F>(f));
   }
 

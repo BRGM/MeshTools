@@ -6,9 +6,9 @@
 
 #include <array>
 #include <vector>
-//#include <CGAL/Delaunay_mesher_2.h>
-//#include <CGAL/Delaunay_mesh_face_base_2.h>
-//#include <CGAL/Delaunay_mesh_size_criteria_2.h>
+// #include <CGAL/Delaunay_mesher_2.h>
+// #include <CGAL/Delaunay_mesh_face_base_2.h>
+// #include <CGAL/Delaunay_mesh_size_criteria_2.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
 #include <CGAL/Polygon_mesh_processing/remesh.h>
@@ -19,7 +19,7 @@
 
 #include <boost/optional.hpp>
 
-//#include "common.h"
+// #include "common.h"
 
 #include "Boundary_hull.h"
 #include "Existence_domain.h"

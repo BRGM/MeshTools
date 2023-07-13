@@ -116,7 +116,7 @@ py::list mesh_implicit_domains_boundaries() {
   // --- Domain for test case 2
   // std::vector<std::string> vps;
   // vps.push_back("+-");
-  //#if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,12,0)
+  // #if CGAL_VERSION_NR > CGAL_VERSION_NUMBER(4,12,0)
   // create_implicit_mesh_domain does not return a
   // Mesh_domain_with_polyline_features_3 so we explicitly build one
   // auto domain = Mesh_domain{
@@ -127,10 +127,10 @@ py::list mesh_implicit_domains_boundaries() {
   //        CGAL::parameters::relative_error_bound = 1e-6
   //    )
   //};
-  //#else // CGAL_VERSION<=4.12
+  // #else // CGAL_VERSION<=4.12
   // Mesh_domain domain(Function_wrapper(v, vps),
   // K::Sphere_3(CGAL::ORIGIN, 5.*5.));
-  //#endif
+  // #endif
 
   // typedef CGAL::Tag_true           Has_features;
   static_assert(std::is_same<CGAL::Tag_true,

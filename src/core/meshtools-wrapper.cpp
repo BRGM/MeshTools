@@ -738,10 +738,12 @@ template <typename MeshType>
 auto add_mesh_submodule(py::module& module, const std::string& name) {
   auto submodule = module.def_submodule(name.c_str());
   auto mesh_class = add_mesh<MeshType>(submodule);
-  submodule.def("create", (decltype(&make_generic_mesh<MeshType>)) &
-                              make_generic_mesh<MeshType>);
-  submodule.def("create_from_remap", (decltype(&create_from_remap<MeshType>)) &
-                                         create_from_remap<MeshType>);
+  submodule.def(
+      "create",
+      (decltype(&make_generic_mesh<MeshType>))&make_generic_mesh<MeshType>);
+  submodule.def(
+      "create_from_remap",
+      (decltype(&create_from_remap<MeshType>))&create_from_remap<MeshType>);
   return std::make_tuple(submodule, mesh_class);
 }
 
@@ -756,8 +758,9 @@ auto add_uniform_mesh_submodule(py::module& module, const std::string& name) {
   // CHECKME: The weird conversion is due to a gcc bug
   // cf.
   // https://stackoverflow.com/questions/45077622/using-a-template-function-pointer-inside-another-template-function?noredirect=1#comment77158283_45077622
-  submodule.def("make", (decltype(&make_uniform_mesh<Mesh_type>)) &
-                            make_uniform_mesh<Mesh_type>);
+  submodule.def(
+      "make",
+      (decltype(&make_uniform_mesh<Mesh_type>))&make_uniform_mesh<Mesh_type>);
   mesh_class.def("face_id", [](const Mesh_type& self,
                                const typename Mesh_type::Facet_type& facet) {
     const auto& faces_id_map = self.connectivity.faces.ids;

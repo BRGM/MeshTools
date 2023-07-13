@@ -2,7 +2,7 @@
 #define MAPBOX_UTIL_OPTIONAL_HPP
 
 #pragma message( \
-    "This implementation of optional is deprecated. See https://github.com/mapbox/variant/issues/64.")
+        "This implementation of optional is deprecated. See https://github.com/mapbox/variant/issues/64.")
 
 #include <mapbox/variant.hpp>
 #include <type_traits>
