@@ -33,7 +33,7 @@ typedef CGAL::Mesh_complex_3_in_triangulation_3<Triangulation> C3t3;
 // typedef ExperimentalBRGM::DistanceTrees<C3t3> DTree;
 // typedef DTree::Point DTP;
 
-// Argument Dependent Lookup for operator<<
+// Argument Dependent Lookup for operator>>
 namespace CGAL {
 
 std::istream& operator>>(std::istream& is, SurfacePatchIndex& spi) {
