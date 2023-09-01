@@ -33,7 +33,7 @@ def add_buffer(hexaedra):
 
 def add_mask_buffer(hexaedra):
     buffered = np.ma.array(add_buffer(hexaedra))
-    mask = np.zeros(buffered.shape, dtype=np.bool)
+    mask = np.zeros(buffered.shape, dtype=bool)
     mask[0, :, :, (0, 2, 4, 6), :] = True
     mask[-1, :, :, (1, 3, 5, 7), :] = True
     mask[:, 0, :, (0, 1, 4, 5), :] = True
@@ -123,7 +123,7 @@ def various_dirty_checks_to_be_cleaned():
 
     def vertical_pilars(nodes):
         nx, ny = nodes.shape[:2]
-        test = np.zeros((nx, ny), dtype=np.bool)
+        test = np.zeros((nx, ny), dtype=bool)
         for i, j in product(range(nx), range(ny)):
             test[i, j] = np.all(
                 [nodes[i, j, :, 0, :2] == nodes[i, j, :, k, :2]] for k in range(8)

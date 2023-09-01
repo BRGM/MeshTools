@@ -155,7 +155,7 @@ def find_faces(mesh, faces, fortran_indexing=False):
             found.append(melts[indices])
             assert len(foo) <= len(elts)
             if len(foo) < len(elts):
-                missed = np.ones(len(elts), dtype=np.bool)
+                missed = np.ones(len(elts), dtype=bool)
                 missed[foo] = False
                 notfound.append(elts[missed.nonzero()[0]])
         else:

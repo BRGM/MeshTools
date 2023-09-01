@@ -431,13 +431,13 @@ def new_id(active):
     active is a boolean array
     returns an array a such that a[old_id]=new_id
     """
-    active = np.asarray(active, dtype=np.bool)
+    active = np.asarray(active, dtype=bool)
     return -1 + np.cumsum(active)
 
 
 def remove_old_faces(faces_nodes, map_faces):
     old_faces = list(map_faces.keys())
-    mask = np.ones(len(faces_nodes), dtype=np.bool)
+    mask = np.ones(len(faces_nodes), dtype=bool)
     mask[old_faces] = False
     return new_id(mask)
 

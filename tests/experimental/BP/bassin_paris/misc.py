@@ -69,7 +69,7 @@ def submesh(vertices, cells, cell_layer, center, radius):
     kept_vertices = vertices[keep]
     kept_nodes = np.nonzero(keep)[0]
     print("on garde", kept_nodes.shape[0], "noeuds")
-    keep = np.ones(cells.shape[0], dtype=np.bool)
+    keep = np.ones(cells.shape[0], dtype=bool)
     for j in range(cells.shape[1]):
         keep &= np.in1d(cells[:, j], kept_nodes)
     kept_cells = cells[keep]

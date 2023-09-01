@@ -177,7 +177,7 @@ class RawMesh:
 
     def _specific_faces(self, nbnodes):
         face_nodes = self.face_nodes
-        return np.array([len(nodes) == nbnodes for nodes in face_nodes], dtype=np.bool)
+        return np.array([len(nodes) == nbnodes for nodes in face_nodes], dtype=bool)
 
     def triangle_faces(self):
         return self._specific_faces(3)
@@ -194,7 +194,7 @@ class RawMesh:
                 len(faces) == 4 and all(triangles[face] for face in faces)
                 for faces in cell_faces
             ],
-            dtype=np.bool,
+            dtype=bool,
         )
 
     def pyramid_cells(self):
@@ -209,7 +209,7 @@ class RawMesh:
                 )
                 for faces in cell_faces
             ],
-            dtype=np.bool,
+            dtype=bool,
         )
 
     def wedge_cells(self):
@@ -224,7 +224,7 @@ class RawMesh:
                 )
                 for faces in cell_faces
             ],
-            dtype=np.bool,
+            dtype=bool,
         )
 
     def hexahedron_cells(self):
@@ -236,7 +236,7 @@ class RawMesh:
                 len(faces) == 6 and all(quadrangles[face] for face in faces)
                 for faces in cell_faces
             ],
-            dtype=np.bool,
+            dtype=bool,
         )
 
     def _centers(self, element_nodes):
