@@ -2,7 +2,7 @@
 
 import os
 import numpy as np
-from skimage.measure import marching_cubes_lewiner as marching_cubes
+from skimage.measure import marching_cubes
 import MeshTools as MT
 import MeshTools.CGALWrappers as CGAL
 import vtkwriters as vtkw
