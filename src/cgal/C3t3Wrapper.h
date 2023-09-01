@@ -12,6 +12,7 @@
 
 #include "BufferInfo.h"
 #include "CGAL/Exact_predicates_inexact_constructions_kernel.h"
+#include "CGAL/Mesh_3/internal/Handle_IO_for_pair_of_int.h"
 #include "CGAL/Mesh_complex_3_in_triangulation_3.h"
 #include "CGAL/Mesh_domain_with_polyline_features_3.h"
 #include "CGAL/Mesh_triangulation_3.h"
