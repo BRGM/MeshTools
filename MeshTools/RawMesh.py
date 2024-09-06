@@ -109,7 +109,7 @@ class RawMesh:
             if name == "cell_nodes":
                 name = "_cell_nodes"
             if name == "vertices":
-                value = np.array(value, copy=False)
+                value = np.asarray(value)
                 assert value.ndim == 2 and value.shape[1] == 3
             setattr(self, name, value)
         self.reprocessed_cellnodes = False

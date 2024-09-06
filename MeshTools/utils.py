@@ -30,8 +30,8 @@ def to_vtu(mesh, filename, **kwargs):
         offsets, cellsnodes = mesh.cells_nodes_as_COC()
         vtu = vtkw.vtu_doc_from_COC(
             mesh.vertices_array(),
-            np.array(offsets[1:], copy=False),  # vtk: no first zero offset
-            np.array(cellsnodes, copy=False),
+            np.asarray(offsets[1:]),  # vtk: no first zero offset
+            np.asarray(cellsnodes),
             mesh.cells_vtk_ids(),
             **kwargs
         )
